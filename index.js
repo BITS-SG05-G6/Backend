@@ -3,6 +3,8 @@ const app = express()
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const handleErrorMiddleware = require('./middlewares/errorHandler');
+const transactionRoute = require('./routes/transactionRoute')
 require('dotenv').config();
 
 // MIDDLEWARE
@@ -17,8 +19,17 @@ mongoose.connect(process.env.DATABASE)
 .catch((err) => console.log(err));
 
 // IMPORT ROUTES
+app.get("/api", (req, res) => {
+  res.status(200).json({ message: "Backend running" });
+});
 
+//============
+//Transaction Route
+app.use("/api/transaction",transactionRoute);
+
+//============
 // ROUTES MIDDLEWARE
+app.use(handleErrorMiddleware);
 
 const port = process.env.PORT || 8000;
 
