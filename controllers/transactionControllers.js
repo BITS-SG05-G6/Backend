@@ -54,14 +54,14 @@ exports.deleteTransaction = async (req, res, next) => {
 
 // //View all transaction
 
-// exports.viewAllTransactions = async (req, res, next) => {
-//   try {
-//     const allTransactions = await Transaction.find();
-//     res.status(200).json({ transactions: allTransactions });
-//   } catch (err) {
-//     next(new ErrorHandler(err.message, 500));
-//   }
-// };
+exports.viewAllTransactions = async (req, res, next) => {
+  try {
+    const allTransactions = await Transaction.find();
+    res.status(200).json({ transactions: allTransactions });
+  } catch (err) {
+    next(new ErrorHandler(err.message, 500));
+  }
+};
 
 // //View transaction by ID
 
