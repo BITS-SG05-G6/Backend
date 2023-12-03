@@ -66,21 +66,21 @@ exports.viewAllTransactions = async (req, res, next) => {
 // //View transaction by ID
 
 
-// exports.viewTransactionsByWalletId = async (req, res, next) => {
-//   const { walletId } = req.params;
+exports.viewTransactionsByWalletId = async (req, res, next) => {
+  const { walletId } = req.params;
 
-//   try {
-//     const transactions = await Transaction.find({ wallet: walletId });
-//     console.log(walletId);
-//     if (transactions.length === 0) {
-//       return next(new ErrorHandler('No transactions found for this wallet ID', 404));
-//     }
+  try {
+    const transactions = await Transaction.find({ wallet: walletId });
+    console.log(walletId);
+    if (transactions.length === 0) {
+      return next(new ErrorHandler('No transactions found for this wallet ID', 404));
+    }
 
-//     res.status(200).json({ transactions });
-//   } catch (err) {
-//     next(new ErrorHandler(err.message, 500));
-//   }
-// };
+    res.status(200).json({ transactions });
+  } catch (err) {
+    next(new ErrorHandler(err.message, 500));
+  }
+};
 
 
 //View Transaction by Date
