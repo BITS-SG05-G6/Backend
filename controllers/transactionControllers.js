@@ -35,22 +35,22 @@ exports.createTransaction = async (req, res, next) => {
   }
 };
 
-// exports.deleteTransaction = async (req, res, next) => {
-//   const { transactionId } = req.params; 
+exports.deleteTransaction = async (req, res, next) => {
+  const { transactionId } = req.params; 
 
-//   try {
-//     const transaction = await Transaction.findById(transactionId);
-//     console.log(transactionId);
-//     if (!transaction) {
-//       return next(new ErrorHandler('Transaction not found', 404));
-//     }
+  try {
+    const transaction = await Transaction.findById(transactionId);
+    console.log(transactionId);
+    if (!transaction) {
+      return next(new ErrorHandler('Transaction not found', 404));
+    }
 
-//     await Transaction.findByIdAndDelete(transactionId);
-//     res.status(200).json({ message: 'Transaction deleted successfully!' });
-//   } catch (err) {
-//     next(new ErrorHandler(err.message, 500));
-//   }
-// };
+    await Transaction.findByIdAndDelete(transactionId);
+    res.status(200).json({ message: 'Transaction deleted successfully!' });
+  } catch (err) {
+    next(new ErrorHandler(err.message, 500));
+  }
+};
 
 // //View all transaction
 
