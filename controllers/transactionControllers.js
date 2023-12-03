@@ -117,3 +117,36 @@ exports.viewTransactionByIdAndDate = async (req, res, next) => {
     next(new ErrorHandler(err.message, 500));
   }
 };
+
+//View transaction by date Range
+exports.viewTransactionByIdAndDateRange = async (req, res, next) => {
+  const { walletId } = req.params;
+  const { startDate, endDate } = req.query;
+
+  try {
+    // Parse the startDate and endDate strings to JavaScript Date objects
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Set the time part of start and end to the beginning and end of the day
+    start.setHours(0, 0, 0, 0); // Start of the day
+    end.setHours(23, 59, 59, 999); // End of the day
+
+    // Find transactions matching the walletId and date range
+    const transactions = await Transaction.find({
+      wallet: walletId,
+      date: {
+        $gte: start,
+        $lte: end
+      }
+    });
+
+    if (!transactions || transactions.length === 0) {
+      return next(new ErrorHandler('Transactions not found for this ID and date range', 404));
+    }
+
+    res.status(200).json({ transactions });
+  } catch (err) {
+    next(new ErrorHandler(err.message, 500));
+  }
+};
