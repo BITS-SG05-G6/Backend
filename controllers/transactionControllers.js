@@ -81,3 +81,39 @@ exports.deleteTransaction = async (req, res, next) => {
 //     next(new ErrorHandler(err.message, 500));
 //   }
 // };
+
+
+//View Transaction by Date
+exports.viewTransactionByIdAndDate = async (req, res, next) => {
+  const { walletId } = req.params;
+  const { date } = req.query;
+
+  try {
+    
+    const specificDate = new Date(date);
+
+    // Set the time part of the specificDate to the start and end of the day
+    specificDate.setHours(0, 0, 0, 0); // Start of the day
+    const endOfDay = new Date(specificDate);
+    endOfDay.setHours(23, 59, 59, 999); // End of the day
+    console.log(specificDate);
+    console.log(walletId);
+    // Find the transaction matching the walletId and date
+    const transaction = await Transaction.find({
+      wallet: walletId,
+      date: {
+        $gte: specificDate,
+        $lte: endOfDay
+      }
+    });
+
+
+    if (!transaction || transaction.length === 0) {
+      return next(new ErrorHandler('Transaction not found for this ID and date', 404));
+    }
+
+    res.status(200).json({ transaction });
+  } catch (err) {
+    next(new ErrorHandler(err.message, 500));
+  }
+};
