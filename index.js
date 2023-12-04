@@ -3,7 +3,7 @@ const app = express()
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-const handleErrorMiddleware = require('./middlewares/errorHandler');
+const handleErrorMiddleware = require('./middlewares/error');
 const transactionRoute = require('./routes/transactionRoute')
 require('dotenv').config();
 

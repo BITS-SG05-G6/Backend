@@ -7,7 +7,7 @@ const transactionSchema = new mongoose.Schema({
   },
   transactionType: {
     type: String,
-    enum: ['Expense', 'Income'],
+    enum: ['Normal', 'Bill'],
     required: [true]
   },
   description: {
@@ -17,10 +17,12 @@ const transactionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Wallet'
   },
-  date : {
-    type: Date,
-    default: Date.now
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }
 })
 
-module.exports = mongoose.model("Transaction", transactionSchema)
+const Transaction = mongoose.model("Transaction", transactionSchema)
+
+module.exports = {Transaction, transactionSchema}
