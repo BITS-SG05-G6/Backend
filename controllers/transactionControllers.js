@@ -1,40 +1,20 @@
 const NormalTransaction = require("../models/normalTransaction");
 const ErrorHandler = require("../utils/ErrorHandler");
 
-//Create transaction
+// Create transaction
 exports.createTransaction = async (req, res, next) => {
-  const { description, amount, transactionType, walletId, type, userId } = req?.body;
-
-  if (!description) {
-    return next(new ErrorHandler("Description is required", 400));
-  }
-
-  if (!amount) {
-    return next(new ErrorHandler("Amount is required", 400));
-  }
-
-  if (!transactionType) {
-    return next(new ErrorHandler("Transaction type is required", 400));
-  }
-
-  if (!walletId) {
-    return next(new ErrorHandler("Wallet ID is required", 400));
-  }
-
-  if (!userId) {
-    return next(new ErrorHandler("User ID is required", 400));
-  }
+  const transactionData = {
+    description: req?.body?.description,
+    amount: req?.body?.amount,
+    transactionType: req?.body?.transactionType,
+    wallet: req?.body?.walletId,
+    user: req?.body?.userId,
+    date: req?.body?.date,
+    type: req?.body?.type,
+  };
 
   try {
-    const transactionData = {
-      description,
-      amount,
-      transactionType,
-      wallet: walletId,
-      user: userId,
-      type,
-    };
-    if (transactionType == "Normal") {
+    if (transactionData.transactionType == "Normal") {
       const createdTransaction = await NormalTransaction.create(
         transactionData
       );
@@ -47,13 +27,15 @@ exports.createTransaction = async (req, res, next) => {
         new ErrorHandler("Invalid type of transaction (Normal or Bill)!", 400)
       );
     }
+    // const date = new Date(transactionData.date).toLocaleDateString(
+    //   "en-GB"
+    // );
   } catch (err) {
-    console.log("Error");
     next(new ErrorHandler(err.message, 500));
   }
 };
 
-//Delete transaction
+// Delete transaction
 exports.deleteTransaction = async (req, res, next) => {
   const { userId, transactionId } = req.params;
 console.log(userId);
@@ -80,7 +62,7 @@ console.log(transactionId);
 };
 
 
-//View all transaction or filter by date
+// View all transaction or filter by date
 exports.viewAllTransactions = async (req, res, next) => {
   const { userId } = req.params;
   const { startDate, endDate } = req.query;
@@ -110,21 +92,19 @@ exports.viewAllTransactions = async (req, res, next) => {
 
     res.status(200).json({ transactions: normalTransactions });
   } catch (err) {
-    console.error("Error:", err);
     next(new ErrorHandler(err.message, 500));
   }
 };
 
 
-//View a transaction
-
-exports.viewTransactions = async (req, res, next) => {
+// View a transaction
+exports.viewTransactionDetail = async (req, res, next) => {
   const { userId } = req.params;
   const { transactionId } = req.params;
 
   try {
     if (!transactionId || !userId) {
-      return next(new ErrorHandler("Transaction ID and User ID are required", 400));
+      return next(new ErrorHandler("Transaction ID and User ID are required", 404));
     }
 
     const normalTransaction = await NormalTransaction.findOne({
@@ -143,7 +123,7 @@ exports.viewTransactions = async (req, res, next) => {
   }
 };
 
-//Update transaction
+// Update transaction
 exports.updateTransaction = async (req, res, next) => {
   const { userId, transactionId } = req.params;
   const { amount,type, description } = req?.body;
