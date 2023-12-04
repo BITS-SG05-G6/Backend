@@ -38,8 +38,7 @@ exports.createTransaction = async (req, res, next) => {
 // Delete transaction
 exports.deleteTransaction = async (req, res, next) => {
   const { userId, transactionId } = req.params;
-console.log(userId);
-console.log(transactionId);
+
   try {
     if (!transactionId || !userId) {
       return next(new ErrorHandler("Transaction ID and User ID are required", 400));
@@ -84,10 +83,13 @@ exports.viewAllTransactions = async (req, res, next) => {
       };
     }
 
-    const normalTransactions = await NormalTransaction.find(query);
+    const normalTransactions = await NormalTransaction.find(query)
+    .catch(() => {
+      return next(new ErrorHandler("Transactions not found", 404));
+    })
 
     if (!normalTransactions.length) {
-      return next(new ErrorHandler("Transactions not found for this user ID", 404));
+      return next(new ErrorHandler("Transactions not found", 404));
     }
 
     res.status(200).json({ transactions: normalTransactions });
@@ -110,10 +112,13 @@ exports.viewTransactionDetail = async (req, res, next) => {
     const normalTransaction = await NormalTransaction.findOne({
       _id: transactionId,
       user: userId,
-    });
+    })
+    .catch(() => {
+      return next(new ErrorHandler("Transaction not found", 404));
+    })
 
     if (!normalTransaction) {
-      return next(new ErrorHandler("Transaction not found for this ID and User ID", 404));
+      return next(new ErrorHandler("Transaction not found", 404));
     }
 
     res.status(200).json({ transaction: normalTransaction });
