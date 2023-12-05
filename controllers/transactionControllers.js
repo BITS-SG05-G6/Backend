@@ -83,7 +83,7 @@ console.log(transactionId);
 //View all transaction or filter by date
 exports.viewAllTransactions = async (req, res, next) => {
   const { userId } = req.params;
-  const { startDate, endDate } = req.query;
+  const { date } = req.query; 
 
   try {
     if (!userId) {
@@ -92,12 +92,16 @@ exports.viewAllTransactions = async (req, res, next) => {
 
     let query = { user: userId };
 
-    if (startDate && endDate) {
-      const endOfDay = new Date(endDate);
+    if (date) {
+      // Assuming 'date' is in ISO format (e.g., '2023-12-05')
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(date);
       endOfDay.setHours(23, 59, 59, 999);
 
       query.date = {
-        $gte: new Date(startDate),
+        $gte: startOfDay,
         $lte: endOfDay,
       };
     }
@@ -105,7 +109,7 @@ exports.viewAllTransactions = async (req, res, next) => {
     const normalTransactions = await NormalTransaction.find(query);
 
     if (!normalTransactions.length) {
-      return next(new ErrorHandler("Transactions not found for this user ID", 404));
+      return next(new ErrorHandler("Transactions not found for this user ID or date", 404));
     }
 
     res.status(200).json({ transactions: normalTransactions });
@@ -114,6 +118,7 @@ exports.viewAllTransactions = async (req, res, next) => {
     next(new ErrorHandler(err.message, 500));
   }
 };
+
 
 
 //View a transaction
