@@ -4,12 +4,12 @@ const Transaction = require('./transaction')
 const normalTransactionSchema = new mongoose.Schema({
   date: {
     type: Date,
-    default: Date.now
+    required: [true, 'Date is required']
   },
   type: {
     type: String,
     enum: ['Income', 'Expense'],
-    required: [true]
+    required: [true, 'Type is required']
   }
 })
 

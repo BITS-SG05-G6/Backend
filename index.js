@@ -19,22 +19,15 @@ mongoose.connect(process.env.DATABASE)
 .catch((err) => console.log(err));
 
 // IMPORT ROUTES
-app.get("/api", (req, res) => {
-  res.status(200).json({ message: "Backend running" });
-});
+app.use("/api/transaction", transactionRoute);
 
-//============
-//Transaction Route
-app.use("/api/transaction",transactionRoute);
-
-//============
 // ROUTES MIDDLEWARE
 app.use(handleErrorMiddleware);
 
 const port = process.env.PORT || 8000;
 
 app.listen(port, () => {
-  console.log(`App listening on port http://localhost:${port}/api`);
+  console.log(`App listening on port http://localhost:${port}`);
 });
 
 
