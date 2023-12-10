@@ -4,8 +4,9 @@ const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const handleErrorMiddleware = require('./middlewares/error');
-const transactionRoute = require('./routes/transactionRoute')
+const walletRoute = require('./routes/walletRoute')
 require('dotenv').config();
+
 
 // MIDDLEWARE
 app.use(cors());
@@ -19,10 +20,11 @@ mongoose.connect(process.env.DATABASE)
 .catch((err) => console.log(err));
 
 // IMPORT ROUTES
-app.use("/api/transaction", transactionRoute);
+// app.use("/api/transaction", transactionRoute);
 
 // ROUTES MIDDLEWARE
 app.use(handleErrorMiddleware);
+app.use("", require('./routes/walletRoute'))
 
 const port = process.env.PORT || 8000;
 
