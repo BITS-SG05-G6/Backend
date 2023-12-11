@@ -1,12 +1,15 @@
-const express = require("express");
-const app = express();
-const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
-const authRoutes = require("./routes/auth");
-const cors = require("cors");
-require("dotenv").config();
+
 const errorHandler = require('./middlewares/errors')
 
+
+const express = require('express')
+const app = express()
+const mongoose = require('mongoose')
+const bodyParser = require('body-parser')
+const cors = require('cors')
+const handleErrorMiddleware = require('./middlewares/error');
+const transactionRoute = require('./routes/transactionRoute')
+require('dotenv').config();
 // MIDDLEWARE
 app.use(cors());
 app.use(express.json());
@@ -20,6 +23,12 @@ mongoose
   .catch((err) => console.log(err));
 
 // IMPORT ROUTES
+
+app.use("/api/transaction", transactionRoute);
+
+app.use(handleErrorMiddleware)
+app.use("/auth", authRoutes);
+
 app.use("/api", authRoutes);
 app.use(errorHandler);
 
