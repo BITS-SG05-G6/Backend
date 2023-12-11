@@ -92,16 +92,10 @@ exports.viewAllTransactions = async (req, res, next) => {
       console.log(startOfDay.toISOString());
     }
 
-    const normalTransactions = await NormalTransaction.find(query);
-    console.log('Date:', date);
-    console.log('User:', userId);
-    console.log(query);
-    
-
-
-    // .catch(() => {
-    //   return next(new ErrorHandler("Transactions not found", 404));
-    // })
+    const normalTransactions = await NormalTransaction.find(query)
+    .catch(() => {
+      return next(new ErrorHandler("Transactions not found", 404));
+    })
 
     if (!normalTransactions.length) {
       return next(new ErrorHandler("Transactions not found for this user ID", 404));
