@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const handleErrorMiddleware = require('./middlewares/error');
 const walletRoute = require('./routes/walletRoute')
+const userRoute = require ('./routes/userRouter')
 require('dotenv').config();
 
 
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.urlencoded({extended: false}));
 
+
 //CONNECT DATABASE
 mongoose.connect(process.env.DATABASE)
 .then(() => console.log('DB connected'))
@@ -21,10 +23,11 @@ mongoose.connect(process.env.DATABASE)
 
 // IMPORT ROUTES
 // app.use("/api/transaction", transactionRoute);
+app.use("/api/wallet", walletRoute)
+app.use("/api/user", userRoute)
 
 // ROUTES MIDDLEWARE
 app.use(handleErrorMiddleware);
-app.use("", require('./routes/walletRoute'))
 
 const port = process.env.PORT || 8000;
 
