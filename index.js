@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const authRoutes = require("./routes/auth");
 const cors = require("cors");
 require("dotenv").config();
+const errorHandler = require('./middlewares/errors')
 
 // MIDDLEWARE
 app.use(cors());
@@ -19,16 +20,15 @@ mongoose
   .catch((err) => console.log(err));
 
 // IMPORT ROUTES
-app.get("/", (req, res, next) => {
-  res.status(200).json("Home Page");
-});
-app.use("/auth", authRoutes);
+app.use("/api", authRoutes);
+app.use(errorHandler);
+
 
 // ROUTES MIDDLEWARE
 const port = process.env.PORT || 8000;
 
 app.listen(port, () => {
-  console.log(`App listening on port http://localhost:${port}/api`);
+  console.log(`App listening on port http://localhost:${port}`);
 });
 
 module.exports = app;
