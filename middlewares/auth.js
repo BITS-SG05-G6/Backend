@@ -18,7 +18,7 @@ exports.isAuthenticated = async (req, res, next) => {
     // Decode the token to get the customer id
     req.userID = await User.findById(decode.id);
     next();
-    
+
   } catch (error) {
     console.log(error);
     return res.status(401).json({ message: "You must login" });

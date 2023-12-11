@@ -1,12 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const jwt = require("jsonwebtoken");
-const User = require("../models/user");
 const user = require("../controllers/userControllers")
-// const errorHandler = require("../middlewares/errorHandler");
-
-// Use the error handling middleware
-// router.use(errorHandler);
+const {isAuthenticated} = require("../middlewares/auth");
 
 // Signup route
 router.post("/signup", user.signup);

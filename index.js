@@ -1,14 +1,12 @@
-
-const errorHandler = require('./middlewares/errors')
-
-
 const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-const handleErrorMiddleware = require('./middlewares/error');
+const errorHandler = require('./middlewares/errors')
+
 const transactionRoute = require('./routes/transactionRoute')
+const userRoute = require('./routes/userRoute')
 require('dotenv').config();
 // MIDDLEWARE
 app.use(cors());
@@ -23,13 +21,8 @@ mongoose
   .catch((err) => console.log(err));
 
 // IMPORT ROUTES
-
+app.use("/api", userRoute);
 app.use("/api/transaction", transactionRoute);
-
-app.use(handleErrorMiddleware)
-app.use("/auth", authRoutes);
-
-app.use("/api", authRoutes);
 app.use(errorHandler);
 
 
