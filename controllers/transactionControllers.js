@@ -47,7 +47,7 @@ exports.deleteTransaction = async (req, res, next) => {
 
     const normalTransaction = await NormalTransaction.findOne({
       _id: transactionId,
-      user: userId, 
+      user: userId,
     });
 
     if (!normalTransaction) {
@@ -65,7 +65,8 @@ exports.deleteTransaction = async (req, res, next) => {
 // View all transaction or filter by date
 exports.viewAllTransactions = async (req, res, next) => {
   const { userId } = req.params;
-  const { date } = req.query; 
+  const { date } = req.query;
+  console.log(date);
   try {
     if (!userId) {
       return next(new ErrorHandler("User ID is required", 400));
@@ -74,22 +75,33 @@ exports.viewAllTransactions = async (req, res, next) => {
     let query = { user: userId };
 
     if (date) {
-      const startOfDay = new Date(date);
-      startOfDay.setHours(0, 0, 0, 0);
+      const parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) {
+        return next(new ErrorHandler("Invalid date format", 400));
+      }
+      const startOfDay = new Date(parsedDate);
+      startOfDay.setUTCHours(0,0,0,0);
 
-      const endOfDay = new Date(date);
-      endOfDay.setHours(23, 59, 59, 999);
+      const endOfDay = new Date(parsedDate);
+      endOfDay.setUTCHours(23,59,59,999);
 
       query.date = {
         $gte: startOfDay,
         $lte: endOfDay,
       };
+      console.log(startOfDay.toISOString());
     }
 
-    const normalTransactions = await NormalTransaction.find(query)
-    .catch(() => {
-      return next(new ErrorHandler("Transactions not found", 404));
-    })
+    const normalTransactions = await NormalTransaction.find(query);
+    console.log('Date:', date);
+    console.log('User:', userId);
+    console.log(query);
+    
+
+
+    // .catch(() => {
+    //   return next(new ErrorHandler("Transactions not found", 404));
+    // })
 
     if (!normalTransactions.length) {
       return next(new ErrorHandler("Transactions not found for this user ID", 404));
@@ -117,9 +129,9 @@ exports.viewTransactionDetail = async (req, res, next) => {
       _id: transactionId,
       user: userId,
     })
-    .catch(() => {
-      return next(new ErrorHandler("Transaction not found", 404));
-    })
+      .catch(() => {
+        return next(new ErrorHandler("Transaction not found", 404));
+      })
 
     if (!normalTransaction) {
       return next(new ErrorHandler("Transaction not found", 404));
@@ -135,7 +147,7 @@ exports.viewTransactionDetail = async (req, res, next) => {
 // Update transaction
 exports.updateTransaction = async (req, res, next) => {
   const { userId, transactionId } = req.params;
-  const { amount,type, description,title } = req?.body;
+  const { amount, type, description, title } = req?.body;
   console.log(userId);
   console.log(transactionId);
 
