@@ -1,4 +1,7 @@
 
+const errorHandler = require('./middlewares/errors')
+
+
 const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
@@ -20,11 +23,15 @@ mongoose
   .catch((err) => console.log(err));
 
 // IMPORT ROUTES
+
 app.use("/api/transaction", transactionRoute);
 
-// ROUTES MIDDLEWARE
 app.use(handleErrorMiddleware)
 app.use("/auth", authRoutes);
+
+app.use("/api", authRoutes);
+app.use(errorHandler);
+
 
 // ROUTES MIDDLEWARE
 const port = process.env.PORT || 8000;
