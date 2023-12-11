@@ -2,12 +2,12 @@ const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const errorHandler = require("./middlewares/errorHandler");
+const errorHandler = require("../middlewares/errorHandler");
 
 // Use the error handling middleware
 router.use(errorHandler);
 
-// Sign Up route
+// Signup route
 router.post("/signup", async (req, res) => {
   try {
     const { username, password, email } = req.body;
@@ -37,7 +37,7 @@ router.post("/signup", async (req, res) => {
 });
 
 // Login route
-router.post("/login", async (req, res) => {
+router.post("/signin", async (req, res) => {
   try {
     const { username, password } = req.body;
 

@@ -19,6 +19,9 @@ mongoose
   .catch((err) => console.log(err));
 
 // IMPORT ROUTES
+app.get("/", (req, res, next) => {
+  res.status(200).json("Home Page");
+});
 app.use("/auth", authRoutes);
 
 // ROUTES MIDDLEWARE
