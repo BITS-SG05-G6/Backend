@@ -8,12 +8,12 @@ exports.createTransaction = async (req, res, next) => {
     amount: req?.body?.amount,
     transactionType: req?.body?.transactionType,
     wallet: req?.body?.walletId,
-    user: req?.body?.userId,
+    user: req.userID,
     date: req?.body?.date,
     type: req?.body?.type,
     title: req?.body?.title,
   };
-
+  // res.status(200).json(transactionData);
   try {
     if (transactionData.transactionType == "Normal") {
       const createdTransaction = await NormalTransaction.create(
@@ -38,16 +38,15 @@ exports.createTransaction = async (req, res, next) => {
 
 // Delete transaction
 exports.deleteTransaction = async (req, res, next) => {
-  const { userId, transactionId } = req.params;
+  const { transactionId } = req.params;
 
   try {
-    if (!transactionId || !userId) {
-      return next(new ErrorHandler("Transaction ID and User ID are required", 400));
+    if (!transactionId) {
+      return next(new ErrorHandler("Transaction ID are required", 400));
     }
 
     const normalTransaction = await NormalTransaction.findOne({
       _id: transactionId,
-      user: userId,
     });
 
     if (!normalTransaction) {
@@ -64,15 +63,14 @@ exports.deleteTransaction = async (req, res, next) => {
 
 // View all transaction or filter by date
 exports.viewAllTransactions = async (req, res, next) => {
-  const { userId } = req.params;
   const { date } = req.query;
   console.log(date);
   try {
-    if (!userId) {
-      return next(new ErrorHandler("User ID is required", 400));
-    }
+    // if (!userId) {
+    //   return next(new ErrorHandler("User ID is required", 400));
+    // }
 
-    let query = { user: userId };
+    // let query = { user: userId };
 
     if (date) {
       const parsedDate = new Date(date);

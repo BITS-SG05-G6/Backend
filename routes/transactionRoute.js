@@ -1,8 +1,9 @@
 const express = require('express')
 const router = express.Router();
 const transaction = require("../controllers/transactionControllers");
+const {isAuthenticated} = require("../middlewares/auth");
 
-router.post('/create', transaction.createTransaction);
+router.post('/create', isAuthenticated, transaction.createTransaction);
 
 router.delete('/delete/:userId/:transactionId', transaction.deleteTransaction);
 
