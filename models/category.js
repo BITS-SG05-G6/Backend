@@ -13,6 +13,12 @@ const categorySchema = new mongoose.Schema({
   description: {
     type: String,
   },
+  color: {
+    type: String,
+  },
+  icon: {
+    type: String
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
