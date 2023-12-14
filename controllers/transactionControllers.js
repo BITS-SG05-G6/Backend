@@ -1,5 +1,6 @@
 const NormalTransaction = require("../models/normalTransaction");
 const ErrorHandler = require("../utils/ErrorHandler");
+const mongoose = require('mongoose'); 
 
 // Create transaction
 exports.createTransaction = async (req, res, next) => {
@@ -164,7 +165,7 @@ exports.updateTransaction = async (req, res, next) => {
     normalTransaction.title = title || normalTransaction.title;
 
 
-    // Save the updated transaction
+    // Save the updated transact`xx``on
     await normalTransaction.save();
 
     res.status(200).json({ message: "Transaction updated successfully!", normalTransaction });
@@ -172,4 +173,3 @@ exports.updateTransaction = async (req, res, next) => {
     next(new ErrorHandler(err.message, 500));
   }
 };
-

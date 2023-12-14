@@ -4,7 +4,7 @@ const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const errorHandler = require('./middlewares/errors')
-
+const statisticRoute = require('./routes/statisticRoute')
 const transactionRoute = require('./routes/transactionRoute')
 const userRoute = require('./routes/userRoute')
 require('dotenv').config();
@@ -23,6 +23,8 @@ mongoose
 // IMPORT ROUTES
 app.use("/api", userRoute);
 app.use("/api/transaction", transactionRoute);
+app.use("/api/statistic", statisticRoute);
+
 app.use(errorHandler);
 
 
