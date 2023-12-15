@@ -32,14 +32,15 @@ exports.createCategory = async(req, res, next) => {
 }
 
 exports.viewCategory = async(req, res, next) => {
-  const categoryType = req.params.type.charAt(0).toUpperCase() + req.params.type.slice(1);
   try {
-    const categories = await (Category.find({user: req.userID, type: categoryType}))
+    const categories = await (Category.find({user: req.userID}))
     const a = await Promise.all(categories.map(async(category) => {
       // console.log(category.name);
       const transactions = await NormalTransaction.find({user: req.userID, category: category})
       let amount = 0;
+      // console.log(transactions);
       transactions.map((transaction) => {
+        // console.log(transaction);
         amount += transaction.amount;
       })
 

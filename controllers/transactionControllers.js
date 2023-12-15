@@ -1,3 +1,4 @@
+const Category = require("../models/category");
 const NormalTransaction = require("../models/normalTransaction");
 const ErrorHandler = require("../utils/ErrorHandler");
 
@@ -9,6 +10,7 @@ exports.createTransaction = async (req, res, next) => {
     transactionType: req?.body?.transactionType,
     wallet: req?.body?.walletId,
     user: req.userID,
+    category: req?.body?.category,
     date: req?.body?.date,
     type: req?.body?.type,
     title: req?.body?.title,
@@ -63,17 +65,21 @@ exports.deleteTransaction = async (req, res, next) => {
 
 // View all transaction or filter by date
 exports.viewAllTransactions = async (req, res, next) => {
-  const { date } = req.query;
+  const filter = {
+    date: req?.query?.date,
+    user: req.userID
+  }
+  // const { date } = req.query;
   // console.log(date);
+  // console.log(filter.date);
   try {
-    // if (!userId) {
-    //   return next(new ErrorHandler("User ID is required", 400));
-    // }
 
-    // let query = { user: userId };
+    if (filter.date === undefined) {
+      delete filter.date;
+    }
 
-    if (date) {
-      const parsedDate = new Date(date);
+    // if (date) {
+      const parsedDate = new Date(filter.date);
       if (isNaN(parsedDate.getTime())) {
         return next(new ErrorHandler("Invalid date format", 400));
       }
@@ -82,23 +88,47 @@ exports.viewAllTransactions = async (req, res, next) => {
 
       const endOfDay = new Date(parsedDate);
       endOfDay.setUTCHours(23,59,59,999);
-      query.date = {
+      filter.date = {
         $gte: startOfDay,
         $lte: endOfDay,
       };
-      console.log(startOfDay.toISOString());
-    }
+      // console.log(startOfDay.toISOString());
+    // }
 
-    const normalTransactions = await NormalTransaction.find(query)
+    // console.log(filter);
+
+    const normalTransactions = await NormalTransaction.find(filter)
     .catch(() => {
       return next(new ErrorHandler("Transactions not found", 404));
     })
 
     if (!normalTransactions.length) {
-      return next(new ErrorHandler("Transactions not found for this user ID", 404));
+      res.status(200).json({transactions: null});
+      // return next(new ErrorHandler("Transactions not found", 404));
     }
 
-    res.status(200).json({ transactions: normalTransactions });
+    const transactionList = await Promise.all(normalTransactions.map(async(transaction) => {
+      const category = await Category.findById(transaction.category);
+      let categoryName;
+      let categoryColor;
+      if (category) {
+        categoryName = category.name;
+        categoryColor = category.color;
+      } else {
+        categoryName = null;
+        categoryColor = "#FCDDEC"
+      } 
+      return {
+        _id: transaction._id,
+        title: transaction.title,
+        category: categoryName,
+        amount: transaction.amount,
+        color: categoryColor
+      }
+    }))
+    // console.log(transactionList);
+
+    res.status(200).json({ transactions: transactionList });
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
   }
@@ -108,19 +138,18 @@ exports.viewAllTransactions = async (req, res, next) => {
 
 // View a transaction
 exports.viewTransactionDetail = async (req, res, next) => {
-  const { userId } = req.params;
   const { transactionId } = req.params;
-
+  // console.log(transactionId);
   try {
-    if (!transactionId || !userId) {
-      return next(new ErrorHandler("Transaction ID and User ID are required", 404));
+    if (transactionId === "undefined") {
+      // console.log(123)
+      return res.status(200).json(null);
+      // return next(new ErrorHandler("Transaction ID and User ID are required", 404));
     }
 
-    const normalTransaction = await NormalTransaction.findOne({
-      _id: transactionId,
-      user: userId,
-    })
+    const normalTransaction = await NormalTransaction.findById(req.params.transactionId)
       .catch(() => {
+        // return res.status(200).json({transaction: null});
         return next(new ErrorHandler("Transaction not found", 404));
       })
 
@@ -128,9 +157,30 @@ exports.viewTransactionDetail = async (req, res, next) => {
       return next(new ErrorHandler("Transaction not found", 404));
     }
 
-    res.status(200).json({ transaction: normalTransaction });
+    if (normalTransaction.category) {
+      const category = await Category.findById(normalTransaction.category)
+      .catch(() => {
+        return next(new ErrorHandler("Category not found", 404))
+      })
+      // console.log(category);
+      const transaction = {
+        _id: normalTransaction._id,
+        type: normalTransaction.type,
+        title: normalTransaction.title,
+        date: normalTransaction.date,
+        description: normalTransaction.description,
+        amount: normalTransaction.amount,
+        category: category.name,
+        categoryColor: category.color
+      }
+
+      return res.status(200).json(transaction);
+    }
+    
+
+    res.status(200).json(normalTransaction);
   } catch (err) {
-    console.error("Error:", err);
+    // console.error("Error:", err);
     next(new ErrorHandler(err.message, 500));
   }
 };
@@ -139,8 +189,8 @@ exports.viewTransactionDetail = async (req, res, next) => {
 exports.updateTransaction = async (req, res, next) => {
   const { userId, transactionId } = req.params;
   const { amount, type, description, title } = req?.body;
-  console.log(userId);
-  console.log(transactionId);
+  // console.log(userId);
+  // console.log(transactionId);
 
   try {
     if (!transactionId || !userId) {
