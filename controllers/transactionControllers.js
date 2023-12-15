@@ -64,7 +64,7 @@ exports.deleteTransaction = async (req, res, next) => {
 // View all transaction or filter by date
 exports.viewAllTransactions = async (req, res, next) => {
   const { date } = req.query;
-  console.log(date);
+  // console.log(date);
   try {
     // if (!userId) {
     //   return next(new ErrorHandler("User ID is required", 400));
@@ -82,7 +82,6 @@ exports.viewAllTransactions = async (req, res, next) => {
 
       const endOfDay = new Date(parsedDate);
       endOfDay.setUTCHours(23,59,59,999);
-
       query.date = {
         $gte: startOfDay,
         $lte: endOfDay,

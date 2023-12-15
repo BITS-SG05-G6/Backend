@@ -7,6 +7,9 @@ const errorHandler = require('./middlewares/errors')
 
 const transactionRoute = require('./routes/transactionRoute')
 const userRoute = require('./routes/userRoute')
+const categoryRoute = require("./routes/categoryRoute")
+const category = require('./models/category')
+
 require('dotenv').config();
 // MIDDLEWARE
 app.use(cors());
@@ -23,6 +26,7 @@ mongoose
 // IMPORT ROUTES
 app.use("/api", userRoute);
 app.use("/api/transaction", transactionRoute);
+app.use("/api/category", categoryRoute)
 app.use(errorHandler);
 
 

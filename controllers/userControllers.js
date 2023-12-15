@@ -16,7 +16,7 @@ exports.signup = async(req, res, next) => {
     // Check if the username already exists
     const existingUser = await User.findOne({username: data.username });
     if (existingUser) {
-      next (new ErrorHandler("Username had been existed", 404))
+      next(new ErrorHandler("Username had been existed", 404))
     }
 
     // Create a new user
