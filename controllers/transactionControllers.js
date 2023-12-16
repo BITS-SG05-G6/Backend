@@ -103,9 +103,10 @@ exports.viewAllTransactions = async (req, res, next) => {
     })
 
     if (!normalTransactions.length) {
-      res.status(200).json({transactions: null});
+      return res.status(200).json({transactions: null});
       // return next(new ErrorHandler("Transactions not found", 404));
     }
+
 
     const transactionList = await Promise.all(normalTransactions.map(async(transaction) => {
       const category = await Category.findById(transaction.category);
@@ -134,13 +135,12 @@ exports.viewAllTransactions = async (req, res, next) => {
   }
 };
 
-
-
 // View a transaction
 exports.viewTransactionDetail = async (req, res, next) => {
   const { transactionId } = req.params;
   // console.log(transactionId);
   try {
+
     if (transactionId === "undefined") {
       // console.log(123)
       return res.status(200).json(null);
@@ -174,6 +174,7 @@ exports.viewTransactionDetail = async (req, res, next) => {
         categoryColor: category.color
       }
 
+      // console.log(transaction.categoryColor);
       return res.status(200).json(transaction);
     }
     
