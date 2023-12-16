@@ -7,7 +7,7 @@ router.post('/create', isAuthenticated, transaction.createTransaction);
 
 router.delete('/delete/:userId/:transactionId', transaction.deleteTransaction);
 
-router.get('/viewall/:userId', transaction.viewAllTransactions); 
+router.get('/viewall', transaction.viewAllTransactions); 
 
 router.get('/:userId/:transactionId', transaction.viewTransactionDetail); 
 

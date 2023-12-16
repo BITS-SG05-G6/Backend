@@ -7,6 +7,9 @@ const errorHandler = require('./middlewares/errors')
 const statisticRoute = require('./routes/statisticRoute')
 const transactionRoute = require('./routes/transactionRoute')
 const userRoute = require('./routes/userRoute')
+const categoryRoute = require("./routes/categoryRoute")
+const category = require('./models/category')
+
 require('dotenv').config();
 // MIDDLEWARE
 app.use(cors());
@@ -25,6 +28,7 @@ app.use("/api", userRoute);
 app.use("/api/transaction", transactionRoute);
 app.use("/api/statistic", statisticRoute);
 
+app.use("/api/category", categoryRoute)
 app.use(errorHandler);
 
 

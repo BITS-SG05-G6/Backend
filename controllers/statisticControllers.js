@@ -44,7 +44,6 @@ exports.getTransactionStatistics7days = async (req, res, next) => {
       ]);
   
       const totalsByDay = {};
-  
       totalExpensePerDay.forEach((entry) => {
         const date = entry._id;
         totalsByDay[date] = {
@@ -210,6 +209,63 @@ exports.getTransactionStatistics7days = async (req, res, next) => {
       res.status(200).json({
         message: 'Success',
         distribution: distribution[0]
+      });
+    } catch (err) {
+      next(new ErrorHandler(err.message, 500));
+    }
+  };
+  
+  exports.getCompareExpanseIncomeByMonth = async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const objectIdUserId = new mongoose.Types.ObjectId(userId);
+  
+      const today = new Date();
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1); // Get the first day of the current month
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Get the last day of the current month
+  
+      const totalExpensePerMonth = await NormalTransaction.aggregate([
+        {
+          $match: {
+            user: objectIdUserId,
+            date: { $gte: startOfMonth, $lte: endOfMonth }, // Filter for transactions within the current month
+            type: 'Expense'
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalExpense: { $sum: { $toDouble: "$amount" } }
+          }
+        }
+      ]);
+  
+      const totalIncomePerMonth = await NormalTransaction.aggregate([
+        {
+          $match: {
+            user: objectIdUserId,
+            date: { $gte: startOfMonth, $lte: endOfMonth }, // Filter for transactions within the current month
+            type: 'Income'
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalIncome: { $sum: { $toDouble: "$amount" } }
+          }
+        }
+      ]);
+  
+      const totalExpense = totalExpensePerMonth.length > 0 ? totalExpensePerMonth[0].totalExpense : 0;
+      const totalIncome = totalIncomePerMonth.length > 0 ? totalIncomePerMonth[0].totalIncome : 0;
+      const responseData = {
+        "Expense": totalExpense,
+        "Income": totalIncome
+      };
+      res.status(200).json({
+
+        "Expense":totalExpense,
+        "Income":totalIncome
       });
     } catch (err) {
       next(new ErrorHandler(err.message, 500));

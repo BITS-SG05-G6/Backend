@@ -9,7 +9,7 @@ const normalTransactionSchema = new mongoose.Schema({
   type: {
     type: String,
     enum: ['Income', 'Expense'],
-    required: [true, 'Type is required']
+    // required: [true, 'Type is required']
   }
 })
 
