@@ -1,10 +1,18 @@
 const mongoose = require("mongoose");
 
 const billSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: [true, "Bill title is required"],
+  },
   reminder: Boolean,
-  nextDueDate: {
+  dueDate: {
     type: Date,
     required: [true, "Due Date is required"],
+  },
+  nextDueDate: {
+    type: Date,
+    default: null,
   },
   status: {
     type: String,
