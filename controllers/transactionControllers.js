@@ -143,11 +143,10 @@ exports.viewTransactionDetail = async (req, res, next) => {
 
     if (transactionId === "undefined") {
       // console.log(123)
-      return res.status(200).json(null);
-      // return next(new ErrorHandler("Transaction ID and User ID are required", 404));
-    }
-
-    const normalTransaction = await NormalTransaction.findById(req.params.transactionId)
+      return res.status(200).json("");
+      // return res.status(200);
+    } else {
+      const normalTransaction = await NormalTransaction.findById(req.params.transactionId)
       .catch(() => {
         // return res.status(200).json({transaction: null});
         return next(new ErrorHandler("Transaction not found", 404));
@@ -180,6 +179,9 @@ exports.viewTransactionDetail = async (req, res, next) => {
     
 
     res.status(200).json(normalTransaction);
+    }
+
+    
   } catch (err) {
     // console.error("Error:", err);
     next(new ErrorHandler(err.message, 500));
