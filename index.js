@@ -1,13 +1,16 @@
-const express = require("express");
-const app = express();
-const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const handleErrorMiddleware = require("./middlewares/error");
+const express = require('express')
+const app = express()
+const mongoose = require('mongoose')
+const bodyParser = require('body-parser')
+const cors = require('cors')
+const errorHandler = require('./middlewares/errors')
+const transactionRoute = require('./routes/transactionRoute')
+const userRoute = require('./routes/userRoute')
+const categoryRoute = require("./routes/categoryRoute")
 const walletRoute = require("./routes/walletRoute");
-const userRoute = require("./routes/userRouter");
-require("dotenv").config();
 
+
+require('dotenv').config();
 // MIDDLEWARE
 app.use(cors());
 app.use(express.json());
@@ -22,12 +25,14 @@ mongoose
 
 // IMPORT ROUTES
 app.use("/api/wallet", walletRoute);
-app.use("/api/user", userRoute);
+app.use("/api", userRoute);
+app.use("/api/transaction", transactionRoute);
+app.use("/api/category", categoryRoute)
+app.use(errorHandler);
+
 
 // ROUTES MIDDLEWARE
-app.use(handleErrorMiddleware);
-
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 8000;
 
 app.listen(port, () => {
   console.log(`App listening on port http://localhost:${port}`);
