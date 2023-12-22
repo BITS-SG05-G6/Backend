@@ -1,16 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const walletController = require("../controllers/walletController");
+const wallet = require("../controllers/walletController");
+const {isAuthenticated} = require("../middlewares/auth");
 
 //Add Wallet
-router.post("/", walletController.addWallet);
-//view all wallet
-router.get("/", walletController.viewAllWallet);
-//view a wallet
-router.get("/:id", walletController.getAWallet);
-//Update wallet
-router.put("/:id", walletController.updateWallet);
-//Delete Wallet
-router.delete("/:id", walletController.deleteWallet);
+router.post("/", isAuthenticated, wallet.createWallet);
+
+router.get("/view", isAuthenticated, wallet.getWallet);
 
 module.exports = router;

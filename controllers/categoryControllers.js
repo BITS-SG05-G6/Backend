@@ -63,16 +63,25 @@ exports.viewCategory = async(req, res, next) => {
   } catch (err) {
     next(new ErrorHandler(err.message, 404))
   }
-  
-  // .then((categories) => {
-  //   res.status(200).json(categories)
-  // })
-  // .catch((err) => {
-  //   next(new ErrorHandler(err.message, 404))
-  // })
 }
 
 exports.deleteCategory = async(req, res, next) => {
+  const transactionList = await NormalTransaction.find({category: req.params.id})
+  await Promise.all(transactionList.map(async (transaction) => {
+    try {
+      const updatedTransaction = await NormalTransaction.findByIdAndUpdate(
+        transaction._id,
+        { category: null }, // Set the category field to null
+        { new: true }
+      );
+  
+      // Handle the updated transaction as needed
+      console.log(`Updated transaction with ID: ${updatedTransaction._id}`);
+    } catch (err) {
+      // Handle errors
+      next(new ErrorHandler(err.message, 404));
+    }
+  }));
   await Category.findByIdAndDelete(req.params.id)
   .then(() => {
     res.status(200).json("Delete successfully")

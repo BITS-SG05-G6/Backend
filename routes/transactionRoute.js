@@ -5,7 +5,7 @@ const {isAuthenticated} = require("../middlewares/auth");
 
 router.post('/create', isAuthenticated, transaction.createTransaction);
 
-router.delete('/delete/:userId/:transactionId', transaction.deleteTransaction);
+router.delete('/delete/:transactionId', isAuthenticated, transaction.deleteTransaction);
 
 router.get('/viewall', isAuthenticated, transaction.viewAllTransactions); 
 

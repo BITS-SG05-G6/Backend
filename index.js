@@ -24,10 +24,10 @@ mongoose
   .catch((err) => console.log(err));
 
 // IMPORT ROUTES
-app.use("/api/wallet", walletRoute);
 app.use("/api", userRoute);
 app.use("/api/transaction", transactionRoute);
 app.use("/api/category", categoryRoute)
+app.use("/api/wallet", walletRoute);
 app.use(errorHandler);
 
 
