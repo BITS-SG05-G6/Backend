@@ -9,6 +9,7 @@ exports.createCategory = async(req, res, next) => {
     color: req?.body?.color,
     icon: req?.body?.icon,
     description: req?.body?.description,
+    budget: req?.body?.budget,
     user: req.userID
   }
 
@@ -50,6 +51,7 @@ exports.viewCategory = async(req, res, next) => {
         type: category.type,
         color: category.color,
         icon: category.icon,
+        budget: category.budget,
         amount: amount
       }
     }))
