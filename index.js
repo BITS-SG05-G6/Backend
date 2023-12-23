@@ -4,11 +4,11 @@ const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const errorHandler = require('./middlewares/errors')
-
 const transactionRoute = require('./routes/transactionRoute')
 const userRoute = require('./routes/userRoute')
 const categoryRoute = require("./routes/categoryRoute")
-const category = require('./models/category')
+const walletRoute = require("./routes/walletRoute");
+
 
 require('dotenv').config();
 // MIDDLEWARE
@@ -27,6 +27,7 @@ mongoose
 app.use("/api", userRoute);
 app.use("/api/transaction", transactionRoute);
 app.use("/api/category", categoryRoute)
+app.use("/api/wallet", walletRoute);
 app.use(errorHandler);
 
 

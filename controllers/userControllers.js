@@ -63,3 +63,7 @@ exports.signin = async(req, res, next) => {
     next(new ErrorHandler(err.message, 404))
   }
 }
+
+exports.getProfile = async(req, res) => {
+  res.status(200).json({id: req.userID._id ,username: req.userID.username});
+}

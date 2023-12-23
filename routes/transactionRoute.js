@@ -5,11 +5,11 @@ const {isAuthenticated} = require("../middlewares/auth");
 
 router.post('/create', isAuthenticated, transaction.createTransaction);
 
-router.delete('/delete/:userId/:transactionId', transaction.deleteTransaction);
+router.delete('/delete/:transactionId', isAuthenticated, transaction.deleteTransaction);
 
-router.get('/viewall', transaction.viewAllTransactions); 
+router.get('/viewall', isAuthenticated, transaction.viewAllTransactions); 
 
-router.get('/:userId/:transactionId', transaction.viewTransactionDetail); 
+router.get('/:transactionId', isAuthenticated, transaction.viewTransactionDetail); 
 
 router.put('/update/:userId/:transactionId', transaction.updateTransaction);
 
