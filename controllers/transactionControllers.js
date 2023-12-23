@@ -23,6 +23,7 @@ exports.createTransaction = async (req, res, next) => {
     date: req?.body?.date,
     type: req?.body?.type,
     title: req?.body?.title,
+    createdAt: new Date(Date.now())
   };
   try {
     console.log(transactionData.category);
@@ -132,10 +133,12 @@ exports.viewAllTransactions = async (req, res, next) => {
           category: categoryName,
           amount: transaction.amount,
           color: categoryColor,
+          createdAt: transaction.createdAt
         };
       })
     );
-    // console.log(transactionList);
+      // Sort the transactions in the descending order 
+    transactionList.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     res.status(200).json({ transactions: transactionList });
   } catch (err) {
