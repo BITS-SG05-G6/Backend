@@ -25,7 +25,6 @@ exports.createTransaction = async (req, res, next) => {
     title: req?.body?.title,
   };
   try {
-    console.log(transactionData.category);
     if (transactionData.transactionType == "Normal") {
       const createdTransaction = await NormalTransaction.create(
         transactionData
@@ -132,6 +131,7 @@ exports.viewAllTransactions = async (req, res, next) => {
           category: categoryName,
           amount: transaction.amount,
           color: categoryColor,
+          type: transaction.type
         };
       })
     );
@@ -186,6 +186,7 @@ exports.viewTransactionDetail = async (req, res, next) => {
             return next(new ErrorHandler("Wallet not found", 404));
           }
         );
+        
         walletName = wallet.name;
         walletColor = wallet.color;
       } else {
@@ -205,7 +206,6 @@ exports.viewTransactionDetail = async (req, res, next) => {
         wallet: walletName,
         walletColor: walletColor,
       };
-      console.log(transaction);
       return res.status(200).json(transaction);
     }
   } catch (err) {

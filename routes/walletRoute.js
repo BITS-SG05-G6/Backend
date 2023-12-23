@@ -8,4 +8,6 @@ router.post("/", isAuthenticated, wallet.createWallet);
 
 router.get("/view", isAuthenticated, wallet.getWallet);
 
+router.delete("/delete/:id", isAuthenticated, wallet.deleteWallet);
+
 module.exports = router;
