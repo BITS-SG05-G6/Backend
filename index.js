@@ -8,7 +8,7 @@ const transactionRoute = require('./routes/transactionRoute')
 const userRoute = require('./routes/userRoute')
 const categoryRoute = require("./routes/categoryRoute")
 const walletRoute = require("./routes/walletRoute");
-
+const statisticRoute = require("./routes/statisticRoute")
 
 require('dotenv').config();
 // MIDDLEWARE
