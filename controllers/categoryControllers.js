@@ -54,12 +54,10 @@ exports.viewCategory = async(req, res, next) => {
       }
     }))
 
-    // console.log(a)
 
     res.status(200).json(a);
 
 
-    // const amount = await NormalTransaction.find({user: req.UserID, category: })
   } catch (err) {
     next(new ErrorHandler(err.message, 404))
   }
@@ -76,7 +74,6 @@ exports.deleteCategory = async(req, res, next) => {
       );
   
       // Handle the updated transaction as needed
-      console.log(`Updated transaction with ID: ${updatedTransaction._id}`);
     } catch (err) {
       // Handle errors
       next(new ErrorHandler(err.message, 404));
