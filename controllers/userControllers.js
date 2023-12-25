@@ -64,6 +64,11 @@ exports.signin = async(req, res, next) => {
   }
 }
 
+exports.signout = async(req, res, next) => {
+  res.clearCookie('token');
+  res.status(200).json({ message: "Logged out successfully" });
+}
+
 exports.getProfile = async(req, res) => {
   res.status(200).json({id: req.userID._id ,username: req.userID.username});
 }
