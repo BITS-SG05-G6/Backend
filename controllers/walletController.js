@@ -10,7 +10,8 @@ exports.createWallet = async(req, res, next) => {
     color: req?.body?.color,
     icon: req?.body?.icon,
     description: req?.body?.icon,
-    user: req.userID
+    user: req.userID,
+    currency: req?.body?.currency,
   }
 
   try {
@@ -41,10 +42,10 @@ exports.getWallet = async(req, res, next) => {
         name: wallet.name,
         color: wallet.color,
         icon: wallet.icon,
-        amount: amount
+        amount: amount,
+        currency: wallet.currency,
       }
     }))
-
     res.status(200).json(walletInfo);
   } catch (err) {
     next(new ErrorHandler(err.message, 404))
