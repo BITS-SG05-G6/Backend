@@ -6,6 +6,10 @@ const walletSchema = new mongoose.Schema({
     require: [true, "Name is require"],
     unique: true,
   },
+  currency: {
+    type: String,
+    require: [true, "Currency is require"],
+  },
   amount: {
     type: Number,
     require: [true, "Amount is require"],

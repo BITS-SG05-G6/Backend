@@ -23,7 +23,8 @@ exports.createTransaction = async (req, res, next) => {
     date: req?.body?.date,
     type: req?.body?.type,
     title: req?.body?.title,
-  };
+    currency: req?.body?.currency
+  }
   try {
     if (transactionData.transactionType == "Normal") {
       const createdTransaction = await NormalTransaction.create(
@@ -131,7 +132,8 @@ exports.viewAllTransactions = async (req, res, next) => {
           category: categoryName,
           amount: transaction.amount,
           color: categoryColor,
-          type: transaction.type
+          type: transaction.type,
+          currency: transaction.currency
         };
       })
     );
@@ -205,6 +207,7 @@ exports.viewTransactionDetail = async (req, res, next) => {
         categoryColor: categoryColor,
         wallet: walletName,
         walletColor: walletColor,
+        currency: normalTransaction.currency
       };
       return res.status(200).json(transaction);
     }
