@@ -20,7 +20,7 @@ const categorySchema = new mongoose.Schema({
     type: String
   },
   budget: {
-    type: String,
+    type: Number,
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
