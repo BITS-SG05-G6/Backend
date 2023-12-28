@@ -311,10 +311,10 @@ exports.expensesFrequencyDistributionLastWeek = async (req, res, next) => {
     const objectIdUserId = new mongoose.Types.ObjectId(userId);
 
     const today = new Date();
-    const lastWeekStart = new Date(
+    const thisWeekStart = new Date(
       today.getFullYear(),
       today.getMonth(),
-      today.getDate() - 7
+      today.getDate() - today.getDay() // Adjust to the start of the week (Sunday)
     );
 
     const distribution = await NormalTransaction.aggregate([
@@ -322,7 +322,7 @@ exports.expensesFrequencyDistributionLastWeek = async (req, res, next) => {
         $match: {
           user: objectIdUserId,
           type: "Expense",
-          date: { $gte: lastWeekStart, $lte: today },
+          date: { $gte: thisWeekStart, $lte: today },
         },
       },
       {
