@@ -76,13 +76,16 @@ exports.viewAllTransactions = async (req, res, next) => {
   const filter = {
     date: req?.query?.date,
     user: req.userID,
+    size: req?.query?.size
   };
 
   try {
     if (filter.date === undefined) {
       delete filter.date;
     }
-
+    if (filter.size === undefined) {
+      delete size;
+    }
     const parsedDate = new Date(filter.date);
     if (isNaN(parsedDate.getTime())) {
       return next(new ErrorHandler("Invalid date format", 400));
@@ -133,9 +136,15 @@ exports.viewAllTransactions = async (req, res, next) => {
     );
 
     // Sort transactions based on created date (descending order)
-    transactionList.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
+    transactionList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    res.status(200).json({ transactions: transactionList });
+    if (size) {
+      const recentTransactions = transactionList.slice(0, size);
+      res.status(200).json({ transactions: recentTransactions });
+    }
+    else {
+      res.status(200).json({ transactions: transactionList });
+    }
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
   }
@@ -184,7 +193,7 @@ exports.viewTransactionDetail = async (req, res, next) => {
             return next(new ErrorHandler("Wallet not found", 404));
           }
         );
-        
+
         walletName = wallet.name;
         walletColor = wallet.color;
       } else {
