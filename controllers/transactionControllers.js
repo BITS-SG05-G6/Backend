@@ -23,7 +23,8 @@ exports.createTransaction = async (req, res, next) => {
     date: req?.body?.date,
     type: req?.body?.type,
     title: req?.body?.title,
-    currency: req?.body?.currency
+    currency: req?.body?.currency,
+    createdAt: new Date(Date.now())
   }
   try {
     if (transactionData.transactionType == "Normal") {
@@ -76,15 +77,12 @@ exports.viewAllTransactions = async (req, res, next) => {
     date: req?.query?.date,
     user: req.userID,
   };
-  // const { date } = req.query;
-  // console.log(date);
-  // console.log(filter.date);
+
   try {
     if (filter.date === undefined) {
       delete filter.date;
     }
 
-    // if (date) {
     const parsedDate = new Date(filter.date);
     if (isNaN(parsedDate.getTime())) {
       return next(new ErrorHandler("Invalid date format", 400));
@@ -98,10 +96,6 @@ exports.viewAllTransactions = async (req, res, next) => {
       $gte: startOfDay,
       $lte: endOfDay,
     };
-    // console.log(startOfDay.toISOString());
-    // }
-
-    // console.log(filter);
 
     const normalTransactions = await NormalTransaction.find(filter).catch(
       () => {
@@ -111,7 +105,6 @@ exports.viewAllTransactions = async (req, res, next) => {
 
     if (!normalTransactions.length) {
       return res.status(200).json({ transactions: null });
-      // return next(new ErrorHandler("Transactions not found", 404));
     }
 
     const transactionList = await Promise.all(
@@ -133,11 +126,14 @@ exports.viewAllTransactions = async (req, res, next) => {
           amount: transaction.amount,
           color: categoryColor,
           type: transaction.type,
-          currency: transaction.currency
+          currency: transaction.currency,
+          createdAt: transaction.createdAt
         };
       })
     );
-    // console.log(transactionList);
+
+    // Sort transactions based on created date (descending order)
+    transactionList.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
 
     res.status(200).json({ transactions: transactionList });
   } catch (err) {
