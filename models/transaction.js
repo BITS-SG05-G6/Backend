@@ -6,13 +6,17 @@ const transactionSchema = new mongoose.Schema({
     required: [true, 'Title is required']
   },
   amount: {
-    type: String,
+    type: Number,
     required: [true, 'Amount is required']
   },
   transactionType: {
     type: String,
     enum: ['Normal', 'Bill'],
     required: [true]
+  },
+  currency: {
+    type: String,
+    required: [true, 'Currency is required']
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,

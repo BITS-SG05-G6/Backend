@@ -19,6 +19,9 @@ const categorySchema = new mongoose.Schema({
   icon: {
     type: String
   },
+  budget: {
+    type: Number,
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'

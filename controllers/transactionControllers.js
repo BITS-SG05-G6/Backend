@@ -1,19 +1,30 @@
+const Category = require("../models/category");
 const NormalTransaction = require("../models/normalTransaction");
 const ErrorHandler = require("../utils/ErrorHandler");
+const Wallet = require("../models/wallet");
 
 // Create transaction
 exports.createTransaction = async (req, res, next) => {
+  const category =
+    req?.body?.category === "none" || req?.body?.category === undefined
+      ? null
+      : req?.body?.category;
+  const wallet =
+    req?.body?.wallet === "none" || req?.body?.wallet === undefined
+      ? null
+      : req?.body?.wallet;
   const transactionData = {
     description: req?.body?.description,
     amount: req?.body?.amount,
     transactionType: req?.body?.transactionType,
-    wallet: req?.body?.walletId,
+    wallet: wallet,
     user: req.userID,
+    category: category,
     date: req?.body?.date,
     type: req?.body?.type,
     title: req?.body?.title,
-  };
-  // res.status(200).json(transactionData);
+    currency: req?.body?.currency
+  }
   try {
     if (transactionData.transactionType == "Normal") {
       const createdTransaction = await NormalTransaction.create(
@@ -28,9 +39,6 @@ exports.createTransaction = async (req, res, next) => {
         new ErrorHandler("Invalid type of transaction (Normal or Bill)!", 400)
       );
     }
-    // const date = new Date(transactionData.date).toLocaleDateString(
-    //   "en-GB"
-    // );
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
   }
@@ -45,92 +53,166 @@ exports.deleteTransaction = async (req, res, next) => {
       return next(new ErrorHandler("Transaction ID are required", 400));
     }
 
-    const normalTransaction = await NormalTransaction.findOne({
-      _id: transactionId,
+    // const normalTransaction = await NormalTransaction.findOne({
+    //   _id: transactionId,
+    // });
+
+    // if (!normalTransaction) {
+    //   return next(new ErrorHandler("Transaction not found", 404));
+    // }
+
+    await NormalTransaction.findByIdAndDelete(transactionId).catch((err) => {
+      next(new ErrorHandler(err.message, 404));
     });
-
-    if (!normalTransaction) {
-      return next(new ErrorHandler("Transaction not found for this User ID", 404));
-    }
-
-    await NormalTransaction.findByIdAndDelete(transactionId);
     res.status(200).json({ message: "Transaction deleted successfully!" });
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
   }
 };
 
-
 // View all transaction or filter by date
 exports.viewAllTransactions = async (req, res, next) => {
-  const { date } = req.query;
+  const filter = {
+    date: req?.query?.date,
+    user: req.userID,
+  };
+  // const { date } = req.query;
   // console.log(date);
+  // console.log(filter.date);
   try {
-    // if (!userId) {
-    //   return next(new ErrorHandler("User ID is required", 400));
+    if (filter.date === undefined) {
+      delete filter.date;
+    }
+
+    // if (date) {
+    const parsedDate = new Date(filter.date);
+    if (isNaN(parsedDate.getTime())) {
+      return next(new ErrorHandler("Invalid date format", 400));
+    }
+    const startOfDay = new Date(parsedDate);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(parsedDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+    filter.date = {
+      $gte: startOfDay,
+      $lte: endOfDay,
+    };
+    // console.log(startOfDay.toISOString());
     // }
 
-    // let query = { user: userId };
+    // console.log(filter);
 
-    if (date) {
-      const parsedDate = new Date(date);
-      if (isNaN(parsedDate.getTime())) {
-        return next(new ErrorHandler("Invalid date format", 400));
+    const normalTransactions = await NormalTransaction.find(filter).catch(
+      () => {
+        return next(new ErrorHandler("Transactions not found", 404));
       }
-      const startOfDay = new Date(parsedDate);
-      startOfDay.setUTCHours(0,0,0,0);
-
-      const endOfDay = new Date(parsedDate);
-      endOfDay.setUTCHours(23,59,59,999);
-      query.date = {
-        $gte: startOfDay,
-        $lte: endOfDay,
-      };
-      console.log(startOfDay.toISOString());
-    }
-
-    const normalTransactions = await NormalTransaction.find(query)
-    .catch(() => {
-      return next(new ErrorHandler("Transactions not found", 404));
-    })
+    );
 
     if (!normalTransactions.length) {
-      return next(new ErrorHandler("Transactions not found for this user ID", 404));
+      return res.status(200).json({ transactions: null });
+      // return next(new ErrorHandler("Transactions not found", 404));
     }
 
-    res.status(200).json({ transactions: normalTransactions });
+    const transactionList = await Promise.all(
+      normalTransactions.map(async (transaction) => {
+        const category = await Category.findById(transaction.category);
+        let categoryName;
+        let categoryColor;
+        if (category) {
+          categoryName = category.name;
+          categoryColor = category.color;
+        } else {
+          categoryName = null;
+          categoryColor = null;
+        }
+        return {
+          _id: transaction._id,
+          title: transaction.title,
+          category: categoryName,
+          amount: transaction.amount,
+          color: categoryColor,
+          type: transaction.type,
+          currency: transaction.currency
+        };
+      })
+    );
+    // console.log(transactionList);
+
+    res.status(200).json({ transactions: transactionList });
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
   }
 };
 
-
-
 // View a transaction
 exports.viewTransactionDetail = async (req, res, next) => {
-  const { userId } = req.params;
   const { transactionId } = req.params;
-
+  // console.log(transactionId);
   try {
-    if (!transactionId || !userId) {
-      return next(new ErrorHandler("Transaction ID and User ID are required", 404));
-    }
-
-    const normalTransaction = await NormalTransaction.findOne({
-      _id: transactionId,
-      user: userId,
-    })
-      .catch(() => {
+    if (transactionId === "undefined") {
+      // console.log(123)
+      return res.status(200).json("");
+      // return res.status(200);
+    } else {
+      const normalTransaction = await NormalTransaction.findById(
+        req.params.transactionId
+      ).catch(() => {
+        // return res.status(200).json({transaction: null});
         return next(new ErrorHandler("Transaction not found", 404));
-      })
+      });
 
-    if (!normalTransaction) {
-      return next(new ErrorHandler("Transaction not found", 404));
+      if (!normalTransaction) {
+        return next(new ErrorHandler("Transaction not found", 404));
+      }
+      let categoryName;
+      let categoryColor;
+      let walletName;
+      let walletColor;
+      if (normalTransaction.category) {
+        const category = await Category.findById(
+          normalTransaction.category
+        ).catch(() => {
+          return next(new ErrorHandler("Category not found", 404));
+        });
+        categoryName = category.name;
+        categoryColor = category.color;
+      } else {
+        categoryName = null;
+        categoryColor = null;
+      }
+
+      if (normalTransaction.wallet) {
+        const wallet = await Wallet.findById(normalTransaction.wallet).catch(
+          () => {
+            return next(new ErrorHandler("Wallet not found", 404));
+          }
+        );
+        
+        walletName = wallet.name;
+        walletColor = wallet.color;
+      } else {
+        walletName = null;
+        walletColor = null;
+      }
+
+      const transaction = {
+        _id: normalTransaction._id,
+        type: normalTransaction.type,
+        title: normalTransaction.title,
+        date: normalTransaction.date,
+        description: normalTransaction.description,
+        amount: normalTransaction.amount,
+        category: categoryName,
+        categoryColor: categoryColor,
+        wallet: walletName,
+        walletColor: walletColor,
+        currency: normalTransaction.currency
+      };
+      return res.status(200).json(transaction);
     }
-
-    res.status(200).json({ transaction: normalTransaction });
   } catch (err) {
-    console.error("Error:", err);
+    // console.error("Error:", err);
     next(new ErrorHandler(err.message, 500));
   }
 };
@@ -139,12 +221,14 @@ exports.viewTransactionDetail = async (req, res, next) => {
 exports.updateTransaction = async (req, res, next) => {
   const { userId, transactionId } = req.params;
   const { amount, type, description, title } = req?.body;
-  console.log(userId);
-  console.log(transactionId);
+  // console.log(userId);
+  // console.log(transactionId);
 
   try {
     if (!transactionId || !userId) {
-      return next(new ErrorHandler("Transaction ID and User ID are required", 400));
+      return next(
+        new ErrorHandler("Transaction ID and User ID are required", 400)
+      );
     }
 
     const normalTransaction = await NormalTransaction.findOne({
@@ -153,22 +237,28 @@ exports.updateTransaction = async (req, res, next) => {
     });
 
     if (!normalTransaction) {
-      return next(new ErrorHandler("Transaction not found for this User ID", 404));
+      return next(
+        new ErrorHandler("Transaction not found for this User ID", 404)
+      );
     }
 
     // Update the transaction fields
     normalTransaction.amount = amount || normalTransaction.amount;
-    normalTransaction.description = description || normalTransaction.description;
+    normalTransaction.description =
+      description || normalTransaction.description;
     normalTransaction.type = type || normalTransaction.type;
     normalTransaction.title = title || normalTransaction.title;
-
 
     // Save the updated transaction
     await normalTransaction.save();
 
-    res.status(200).json({ message: "Transaction updated successfully!", normalTransaction });
+    res
+      .status(200)
+      .json({
+        message: "Transaction updated successfully!",
+        normalTransaction,
+      });
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
   }
 };
-
