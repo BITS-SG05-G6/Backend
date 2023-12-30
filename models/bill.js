@@ -1,14 +1,15 @@
 const mongoose = require("mongoose");
+const Transaction = require('./transaction')
 
 const billSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: [true, "Bill title is required"],
+  reminder: {
+    type: Boolean,
+    required: [true, "Reminder is required"],
   },
-  reminder: Boolean,
-  dueDate: {
+  startDate: {
     type: Date,
-    required: [true, "Due Date is required"],
+    required: [true, "Start Date is required"],
+    // default: new Date(),
   },
   nextDueDate: {
     type: Date,
@@ -16,15 +17,16 @@ const billSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["Paid", "Not Paid"],
-    required: [true, "Status is required"],
+    enum: ["Paid", "Not Paid", "Cancel"],
+    default: "Paid"
+    // required: [true, "Status is required"],
   },
   frequency: {
     type: String,
-    enum: ["Every Day", "Every Week", "Every Month", "Every Year"],
+    enum: ["Daily", "Weekly", "Monthly", "Quarterly", "Anually", "None"],
   },
 });
 
-const Bill = mongoose.model("Bill", billSchema);
+billSchema.add(Transaction.transactionSchema)
 
-module.exports = { Bill, billSchema };
+module.exports = mongoose.model("Bill", billSchema);

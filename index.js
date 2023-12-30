@@ -8,8 +8,8 @@ const errorHandler = require("./middlewares/errors");
 const transactionRoute = require("./routes/transactionRoute");
 const userRoute = require("./routes/userRoute");
 const categoryRoute = require("./routes/categoryRoute");
-const category = require("./models/category");
 const billRoute = require("./routes/billRoute");
+const walletRoute = require("./routes/walletRoute");
 
 require("dotenv").config();
 
