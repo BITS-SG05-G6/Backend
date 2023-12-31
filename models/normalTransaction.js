@@ -8,9 +8,13 @@ const normalTransactionSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['Income', 'Expense'],
-    // required: [true, 'Type is required']
-  }
+    enum: ['Income', 'Expense', 'Saving'],
+    required: [true, 'Type is required']
+  },
+  saving: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Saving'
+  },
 })
 
 normalTransactionSchema.add(Transaction.transactionSchema)

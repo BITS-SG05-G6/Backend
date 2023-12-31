@@ -1,14 +1,15 @@
-const express = require('express')
-const app = express()
-const mongoose = require('mongoose')
-const bodyParser = require('body-parser')
-const cors = require('cors')
-const errorHandler = require('./middlewares/errors')
-const transactionRoute = require('./routes/transactionRoute')
-const userRoute = require('./routes/userRoute')
-const categoryRoute = require("./routes/categoryRoute")
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const errorHandler = require('./middlewares/errors');
+const transactionRoute = require('./routes/transactionRoute');
+const userRoute = require('./routes/userRoute');
+const categoryRoute = require("./routes/categoryRoute");
 const walletRoute = require("./routes/walletRoute");
+const savingRoute = require("./routes/savingRoute");
 
+const app = express();
 
 require('dotenv').config();
 // MIDDLEWARE
@@ -26,8 +27,9 @@ mongoose
 // IMPORT ROUTES
 app.use("/api", userRoute);
 app.use("/api/transaction", transactionRoute);
-app.use("/api/category", categoryRoute)
+app.use("/api/category", categoryRoute);
 app.use("/api/wallet", walletRoute);
+app.use("/api/saving", savingRoute);
 app.use(errorHandler);
 
 

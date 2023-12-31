@@ -1,7 +1,7 @@
 const { generateToken } = require("../middlewares/generateToken");
 const { hashPwd } = require("../middlewares/hash");
 const User = require("../models/user")
-const ErrorHandler = require("../utils/errorHandler"); 
+const ErrorHandler = require("../utils/ErrorHandler"); 
 const bcrypt = require('bcryptjs');
 
 exports.signup = async(req, res, next) => {
