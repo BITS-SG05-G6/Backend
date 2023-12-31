@@ -54,14 +54,6 @@ exports.deleteTransaction = async (req, res, next) => {
       return next(new ErrorHandler("Transaction ID are required", 400));
     }
 
-    // const normalTransaction = await NormalTransaction.findOne({
-    //   _id: transactionId,
-    // });
-
-    // if (!normalTransaction) {
-    //   return next(new ErrorHandler("Transaction not found", 404));
-    // }
-
     await NormalTransaction.findByIdAndDelete(transactionId).catch((err) => {
       next(new ErrorHandler(err.message, 404));
     });
@@ -76,37 +68,36 @@ exports.viewAllTransactions = async (req, res, next) => {
   const filter = {
     date: req?.query?.date,
     user: req.userID,
-    size: req?.query?.size
   };
 
   try {
     if (filter.date === undefined) {
       delete filter.date;
     }
-    if (filter.size === undefined) {
-      delete size;
-    }
-    const parsedDate = new Date(filter.date);
-    if (isNaN(parsedDate.getTime())) {
-      return next(new ErrorHandler("Invalid date format", 400));
-    }
-    const startOfDay = new Date(parsedDate);
-    startOfDay.setUTCHours(0, 0, 0, 0);
+    if (filter.date) {
+      const parsedDate = new Date(filter.date);
+      if (isNaN(parsedDate.getTime())) {
+        return next(new ErrorHandler("Invalid date format", 400));
+      }
 
-    const endOfDay = new Date(parsedDate);
-    endOfDay.setUTCHours(23, 59, 59, 999);
-    filter.date = {
-      $gte: startOfDay,
-      $lte: endOfDay,
-    };
+      const startOfDay = new Date(parsedDate);
+      startOfDay.setUTCHours(0, 0, 0, 0);
 
+      const endOfDay = new Date(parsedDate);
+      endOfDay.setUTCHours(23, 59, 59, 999);
+      filter.date = {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      };
+    }
     const normalTransactions = await NormalTransaction.find(filter).catch(
       () => {
         return next(new ErrorHandler("Transactions not found", 404));
       }
     );
 
-    if (!normalTransactions.length) {
+
+    if (normalTransactions.length == 0) {
       return res.status(200).json({ transactions: null });
     }
 
@@ -138,6 +129,8 @@ exports.viewAllTransactions = async (req, res, next) => {
     // Sort transactions based on created date (descending order)
     transactionList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
+    // Extract a number of recent transactions
+    const size = req?.query?.size;
     if (size) {
       const recentTransactions = transactionList.slice(0, size);
       res.status(200).json({ transactions: recentTransactions });
@@ -257,12 +250,10 @@ exports.updateTransaction = async (req, res, next) => {
     // Save the updated transaction
     await normalTransaction.save();
 
-    res
-      .status(200)
-      .json({
-        message: "Transaction updated successfully!",
-        normalTransaction,
-      });
+    res.status(200).json({
+      message: "Transaction updated successfully!",
+      normalTransaction,
+    });
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
   }
