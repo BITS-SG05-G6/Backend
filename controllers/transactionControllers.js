@@ -23,7 +23,8 @@ exports.createTransaction = async (req, res, next) => {
     date: req?.body?.date,
     type: req?.body?.type,
     title: req?.body?.title,
-    currency: req?.body?.currency
+    currency: req?.body?.currency,
+    createdAt: new Date(Date.now())
   }
   try {
     if (transactionData.transactionType == "Normal") {
@@ -53,14 +54,6 @@ exports.deleteTransaction = async (req, res, next) => {
       return next(new ErrorHandler("Transaction ID are required", 400));
     }
 
-    // const normalTransaction = await NormalTransaction.findOne({
-    //   _id: transactionId,
-    // });
-
-    // if (!normalTransaction) {
-    //   return next(new ErrorHandler("Transaction not found", 404));
-    // }
-
     await NormalTransaction.findByIdAndDelete(transactionId).catch((err) => {
       next(new ErrorHandler(err.message, 404));
     });
@@ -76,42 +69,36 @@ exports.viewAllTransactions = async (req, res, next) => {
     date: req?.query?.date,
     user: req.userID,
   };
-  // const { date } = req.query;
-  // console.log(date);
-  // console.log(filter.date);
+
   try {
     if (filter.date === undefined) {
       delete filter.date;
     }
+    if (filter.date) {
+      const parsedDate = new Date(filter.date);
+      if (isNaN(parsedDate.getTime())) {
+        return next(new ErrorHandler("Invalid date format", 400));
+      }
 
-    // if (date) {
-    const parsedDate = new Date(filter.date);
-    if (isNaN(parsedDate.getTime())) {
-      return next(new ErrorHandler("Invalid date format", 400));
+      const startOfDay = new Date(parsedDate);
+      startOfDay.setUTCHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(parsedDate);
+      endOfDay.setUTCHours(23, 59, 59, 999);
+      filter.date = {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      };
     }
-    const startOfDay = new Date(parsedDate);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(parsedDate);
-    endOfDay.setUTCHours(23, 59, 59, 999);
-    filter.date = {
-      $gte: startOfDay,
-      $lte: endOfDay,
-    };
-    // console.log(startOfDay.toISOString());
-    // }
-
-    // console.log(filter);
-
     const normalTransactions = await NormalTransaction.find(filter).catch(
       () => {
         return next(new ErrorHandler("Transactions not found", 404));
       }
     );
 
-    if (!normalTransactions.length) {
+
+    if (normalTransactions.length == 0) {
       return res.status(200).json({ transactions: null });
-      // return next(new ErrorHandler("Transactions not found", 404));
     }
 
     const transactionList = await Promise.all(
@@ -133,13 +120,24 @@ exports.viewAllTransactions = async (req, res, next) => {
           amount: transaction.amount,
           color: categoryColor,
           type: transaction.type,
-          currency: transaction.currency
+          currency: transaction.currency,
+          createdAt: transaction.createdAt
         };
       })
     );
-    // console.log(transactionList);
 
-    res.status(200).json({ transactions: transactionList });
+    // Sort transactions based on created date (descending order)
+    transactionList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Extract a number of recent transactions
+    const size = req?.query?.size;
+    if (size) {
+      const recentTransactions = transactionList.slice(0, size);
+      res.status(200).json({ transactions: recentTransactions });
+    }
+    else {
+      res.status(200).json({ transactions: transactionList });
+    }
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
   }
@@ -188,7 +186,7 @@ exports.viewTransactionDetail = async (req, res, next) => {
             return next(new ErrorHandler("Wallet not found", 404));
           }
         );
-        
+
         walletName = wallet.name;
         walletColor = wallet.color;
       } else {
@@ -252,12 +250,10 @@ exports.updateTransaction = async (req, res, next) => {
     // Save the updated transaction
     await normalTransaction.save();
 
-    res
-      .status(200)
-      .json({
-        message: "Transaction updated successfully!",
-        normalTransaction,
-      });
+    res.status(200).json({
+      message: "Transaction updated successfully!",
+      normalTransaction,
+    });
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
   }
