@@ -1,7 +1,6 @@
 const SavingGoal = require('../models/savingGoal');
 const ErrorHandler = require("../utils/ErrorHandler");
 const NormalTransaction = require('../models/normalTransaction');
-const savingGoal = require('../models/savingGoal');
 
 // Create a saving goal 
 exports.createGoal = async (req, res, next) => {
@@ -103,5 +102,35 @@ exports.deleteGoal = async (req, res, next) => {
         next(new ErrorHandler(err.message, 500));
     }
 
-
 }
+
+// Update a saving goal's information
+exports.updateGoal = async (req, res, next) => {
+    const goalId = req.params.id;
+
+    // Retrieve fields of the saving goal from the form data
+    const dataToUpdate = {
+        name: req?.body?.name,
+        color: req?.body?.color,
+        icon: req?.body?.icon,
+        description: req?.body?.description,
+        target: req?.body?.target,
+        startDate: req?.body?.startDate,
+        endDate: req?.body?.endDate,
+        status: req?.body?.status,
+    };
+
+    try {
+        // Check if the goal with the given ID exists
+        const existingGoal = await SavingGoal.findById(goalId);
+        if (!existingGoal) {
+            return next(new ErrorHandler("Saving goal not found", 404));
+        }
+        // Update the goal with the new data
+        const updatedGoal = await SavingGoal.findByIdAndUpdate(goalId, dataToUpdate, { new: true });
+        console.log(updatedGoal);
+        res.status(200).json("Saving goal updated successfully");
+    } catch (err) {
+        next(new ErrorHandler(err.message, 500));
+    }
+};
