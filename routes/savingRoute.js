@@ -9,7 +9,9 @@ router.get("/view", isAuthenticated, savingGoal.viewGoals);
 
 router.get("/view/:id", isAuthenticated, savingGoal.viewGoal);
 
-router.delete("/delete/:id", isAuthenticated, savingGoal.deleteGoal);
+router.delete("/:id/delete", isAuthenticated, savingGoal.deleteGoal);
+
+router.put("/:id/update", isAuthenticated, savingGoal.updateGoal);
 
 
 module.exports = router;
