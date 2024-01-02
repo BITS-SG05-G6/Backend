@@ -71,9 +71,11 @@ exports.viewAllTransactions = async (req, res, next) => {
   };
 
   try {
-    if (filter.date === undefined) {
+    console.log(filter.date);
+    if (filter.date === undefined || filter.date === null) {
       delete filter.date;
     }
+    
     if (filter.date) {
       const parsedDate = new Date(filter.date);
       if (isNaN(parsedDate.getTime())) {
@@ -129,15 +131,7 @@ exports.viewAllTransactions = async (req, res, next) => {
     // Sort transactions based on created date (descending order)
     transactionList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    // Extract a number of recent transactions
-    const size = req?.query?.size;
-    if (size) {
-      const recentTransactions = transactionList.slice(0, size);
-      res.status(200).json({ transactions: recentTransactions });
-    }
-    else {
-      res.status(200).json({ transactions: transactionList });
-    }
+    res.status(200).json({ transactions: transactionList });
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
   }
