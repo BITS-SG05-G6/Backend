@@ -10,7 +10,7 @@ exports.createWallet = async(req, res, next) => {
     color: req?.body?.color,
     icon: req?.body?.icon,
     description: req?.body?.icon,
-    user: req.userID
+    user: req.userID,
   }
 
   try {
@@ -34,17 +34,20 @@ exports.getWallet = async(req, res, next) => {
       const transactions = await NormalTransaction.find({user: req.userID, wallet: wallet})
       let amount = wallet.amount;
       transactions.map((transaction) => {
-        amount += transaction.amount;
+        if (transaction.type === "Expense") {
+          amount -= transaction.amount;
+        } else if (transaction.type === "Income") {
+          amount += transaction.amount;
+        }
       })
       return {
         id: wallet._id,
         name: wallet.name,
         color: wallet.color,
         icon: wallet.icon,
-        amount: amount
+        amount: amount,
       }
     }))
-
     res.status(200).json(walletInfo);
   } catch (err) {
     next(new ErrorHandler(err.message, 404))
@@ -52,6 +55,22 @@ exports.getWallet = async(req, res, next) => {
 }
 
 exports.deleteWallet = async(req, res, next) => {
+  const transactionList = await NormalTransaction.find({wallet: req.params.id})
+  await Promise.all(transactionList.map(async (transaction) => {
+    try {
+      const updatedTransaction = await NormalTransaction.findByIdAndUpdate(
+        transaction._id,
+        { wallet: null }, 
+        { new: true }
+      );
+  
+      // Handle the updated transaction as needed
+      // console.log(`Updated transaction with ID: ${updatedTransaction._id}`);
+    } catch (err) {
+      // Handle errors
+      next(new ErrorHandler(err.message, 404));
+    }
+  }));
   await Wallet.findByIdAndDelete(req.params.id)
   .then(() => {
     res.status(200).json("Delete successfully")

@@ -9,6 +9,7 @@ exports.createCategory = async(req, res, next) => {
     color: req?.body?.color,
     icon: req?.body?.icon,
     description: req?.body?.description,
+    budget: req?.body?.budget,
     user: req.userID
   }
 
@@ -50,16 +51,15 @@ exports.viewCategory = async(req, res, next) => {
         type: category.type,
         color: category.color,
         icon: category.icon,
+        budget: category.budget,
         amount: amount
       }
     }))
 
-    // console.log(a)
 
     res.status(200).json(a);
 
 
-    // const amount = await NormalTransaction.find({user: req.UserID, category: })
   } catch (err) {
     next(new ErrorHandler(err.message, 404))
   }
@@ -76,7 +76,6 @@ exports.deleteCategory = async(req, res, next) => {
       );
   
       // Handle the updated transaction as needed
-      console.log(`Updated transaction with ID: ${updatedTransaction._id}`);
     } catch (err) {
       // Handle errors
       next(new ErrorHandler(err.message, 404));
