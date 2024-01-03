@@ -123,7 +123,8 @@ exports.viewAllTransactions = async (req, res, next) => {
           color: categoryColor,
           type: transaction.type,
           currency: transaction.currency,
-          createdAt: transaction.createdAt
+          createdAt: transaction.createdAt,
+          date: transaction.date
         };
       })
     );
