@@ -1,6 +1,7 @@
 const Category = require("../models/category");
 const NormalTransaction = require("../models/normalTransaction");
 const ErrorHandler = require("../utils/ErrorHandler");
+const mongoose = require('mongoose'); 
 const Wallet = require("../models/wallet");
 
 // Create transaction
@@ -242,7 +243,9 @@ exports.updateTransaction = async (req, res, next) => {
     normalTransaction.type = type || normalTransaction.type;
     normalTransaction.title = title || normalTransaction.title;
 
-    // Save the updated transaction
+
+    // Save the updated transact`xx``on
+
     await normalTransaction.save();
 
     res.status(200).json({
