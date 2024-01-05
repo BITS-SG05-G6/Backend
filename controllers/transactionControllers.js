@@ -13,9 +13,17 @@ exports.createTransaction = async (req, res, next) => {
     req?.body?.wallet === "none" || req?.body?.wallet === undefined
       ? null
       : req?.body?.wallet;
+  let VNDAmount;
+  let USDAmount;
+  if (req?.body?.currency === "VND") {
+    VNDAmount = req?.body?.amount;
+    USDAmount = req?.body?.exchangeAmount;
+  } else {
+    USDAmount = req?.body?.amount;
+    VNDAmount = req?.body?.exchangeAmount
+  }
   const transactionData = {
     description: req?.body?.description,
-    amount: req?.body?.amount,
     transactionType: req?.body?.transactionType,
     wallet: wallet,
     user: req.userID,
@@ -23,9 +31,12 @@ exports.createTransaction = async (req, res, next) => {
     date: req?.body?.date,
     type: req?.body?.type,
     title: req?.body?.title,
-    currency: req?.body?.currency
+    // currency: req?.body?.currency,
+    VND: VNDAmount,
+    USD: USDAmount,
   }
   try {
+    // console.log(transactionData);
     if (transactionData.transactionType == "Normal") {
       const createdTransaction = await NormalTransaction.create(
         transactionData
@@ -137,7 +148,7 @@ exports.viewAllTransactions = async (req, res, next) => {
         };
       })
     );
-    // console.log(transactionList);
+    console.log(transactionList);
 
     res.status(200).json({ transactions: transactionList });
   } catch (err) {

@@ -5,18 +5,18 @@ const transactionSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Title is required']
   },
-  amount: {
+  VND: {
     type: Number,
-    required: [true, 'Amount is required']
+    required: [true, 'VND is required']
+  },
+  USD: {
+    type: Number,
+    required: [true, 'USD is required']
   },
   transactionType: {
     type: String,
     enum: ['Normal', 'Bill'],
     required: [true]
-  },
-  currency: {
-    type: String,
-    required: [true, 'Currency is required']
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
