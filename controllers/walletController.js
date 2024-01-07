@@ -34,11 +34,13 @@ exports.getWallet = async(req, res, next) => {
       const transactions = await NormalTransaction.find({user: req.userID, wallet: wallet})
       let amount = wallet.amount;
       transactions.map((transaction) => {
-        if (transaction.type === "Expense") {
-          amount -= transaction.amount;
-        } else if (transaction.type === "Income") {
-          amount += transaction.amount;
-        }
+        const transactionAmount = req.userID.baseCurrency === "VND" ? transaction.VND : transaction.USD;
+
+          if (transaction.type === "Expense") {
+            amount -= transactionAmount;
+          } else if (transaction.type === "Income") {
+            amount += transactionAmount;
+          }
       })
       return {
         id: wallet._id,

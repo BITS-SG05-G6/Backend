@@ -70,5 +70,5 @@ exports.signout = async(req, res, next) => {
 }
 
 exports.getProfile = async(req, res) => {
-  res.status(200).json({id: req.userID._id ,username: req.userID.username});
+  res.status(200).json({id: req.userID._id ,username: req.userID.username, baseCurrency: req.userID.baseCurrency});
 }

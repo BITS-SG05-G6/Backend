@@ -1,7 +1,7 @@
 const Category = require("../models/category");
 const NormalTransaction = require("../models/normalTransaction");
 const ErrorHandler = require("../utils/ErrorHandler");
-const mongoose = require('mongoose'); 
+const mongoose = require("mongoose");
 const Wallet = require("../models/wallet");
 
 // Create transaction
@@ -21,7 +21,7 @@ exports.createTransaction = async (req, res, next) => {
     USDAmount = req?.body?.exchangeAmount;
   } else {
     USDAmount = req?.body?.amount;
-    VNDAmount = req?.body?.exchangeAmount
+    VNDAmount = req?.body?.exchangeAmount;
   }
   const transactionData = {
     description: req?.body?.description,
@@ -32,11 +32,11 @@ exports.createTransaction = async (req, res, next) => {
     date: req?.body?.date,
     type: req?.body?.type,
     title: req?.body?.title,
-    // currency: req?.body?.currency,
+    currency: req?.body?.currency,
     VND: VNDAmount,
     USD: USDAmount,
-    createdAt: new Date(Date.now())
-  }
+    createdAt: new Date(Date.now()),
+  };
   try {
     // console.log(transactionData);
     if (transactionData.transactionType == "Normal") {
@@ -83,11 +83,11 @@ exports.viewAllTransactions = async (req, res, next) => {
   };
 
   try {
-    console.log(filter.date);
+    // console.log(filter.date);
     if (filter.date === undefined || filter.date === null) {
       delete filter.date;
     }
-    
+
     if (filter.date) {
       const parsedDate = new Date(filter.date);
       if (isNaN(parsedDate.getTime())) {
@@ -110,7 +110,6 @@ exports.viewAllTransactions = async (req, res, next) => {
       }
     );
 
-
     if (normalTransactions.length == 0) {
       return res.status(200).json({ transactions: null });
     }
@@ -118,32 +117,28 @@ exports.viewAllTransactions = async (req, res, next) => {
     const transactionList = await Promise.all(
       normalTransactions.map(async (transaction) => {
         const category = await Category.findById(transaction.category);
-        let categoryName;
-        let categoryColor;
-        if (category) {
-          categoryName = category.name;
-          categoryColor = category.color;
-        } else {
-          categoryName = null;
-          categoryColor = null;
-        }
+        const categoryName = category ? category.name : null;
+        const categoryColor = category ? category.color : null;
+
+        const amount = transaction.currency === "VND" ? transaction.VND : transaction.USD;
+
         return {
           _id: transaction._id,
           title: transaction.title,
           category: categoryName,
-          amount: transaction.amount,
+          amount: amount,
           color: categoryColor,
           type: transaction.type,
           currency: transaction.currency,
           createdAt: transaction.createdAt,
-          date: transaction.date
+          date: transaction.date,
         };
       })
     );
-    console.log(transactionList);
-
     // Sort transactions based on created date (descending order)
-    transactionList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    transactionList.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
     res.status(200).json({ transactions: transactionList });
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
@@ -170,8 +165,8 @@ exports.viewTransactionDetail = async (req, res, next) => {
       if (!normalTransaction) {
         return next(new ErrorHandler("Transaction not found", 404));
       }
-      let categoryName;
-      let categoryColor;
+      let categoryName = null;
+      let categoryColor = null;
       let walletName;
       let walletColor;
       if (normalTransaction.category) {
@@ -182,10 +177,7 @@ exports.viewTransactionDetail = async (req, res, next) => {
         });
         categoryName = category.name;
         categoryColor = category.color;
-      } else {
-        categoryName = null;
-        categoryColor = null;
-      }
+      } 
 
       if (normalTransaction.wallet) {
         const wallet = await Wallet.findById(normalTransaction.wallet).catch(
@@ -201,23 +193,24 @@ exports.viewTransactionDetail = async (req, res, next) => {
         walletColor = null;
       }
 
+      const amount = normalTransaction.currency === "VND" ? normalTransaction.VND : normalTransaction.USD;
+
       const transaction = {
         _id: normalTransaction._id,
         type: normalTransaction.type,
         title: normalTransaction.title,
         date: normalTransaction.date,
         description: normalTransaction.description,
-        amount: normalTransaction.amount,
+        amount: amount,
         category: categoryName,
         categoryColor: categoryColor,
         wallet: walletName,
         walletColor: walletColor,
-        currency: normalTransaction.currency
+        currency: normalTransaction.currency,
       };
       return res.status(200).json(transaction);
     }
   } catch (err) {
-    // console.error("Error:", err);
     next(new ErrorHandler(err.message, 500));
   }
 };
@@ -253,7 +246,6 @@ exports.updateTransaction = async (req, res, next) => {
       description || normalTransaction.description;
     normalTransaction.type = type || normalTransaction.type;
     normalTransaction.title = title || normalTransaction.title;
-
 
     // Save the updated transact`xx``on
 

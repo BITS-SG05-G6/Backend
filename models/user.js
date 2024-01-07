@@ -10,6 +10,12 @@ const userSchema = new mongoose.Schema({
     type: String, 
     required: [true, "Password is required"] 
   },
+  baseCurrency: {
+    type: String,
+    required: [true, "Base currency is required"],
+    enum: ["VND", "USD"],
+    default: "VND"
+  }
 });
 
 // Hash the user's password before saving it to the database

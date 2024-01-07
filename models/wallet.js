@@ -3,12 +3,12 @@ const mongoose = require("mongoose");
 const walletSchema = new mongoose.Schema({
   name: {
     type: String,
-    require: [true, "Name is require"],
+    require: [true, "Name is required"],
     unique: true,
   },
   amount: {
     type: Number,
-    require: [true, "Amount is require"],
+    require: [true, "Amount is required"],
   },
   description: {
     type: String,
