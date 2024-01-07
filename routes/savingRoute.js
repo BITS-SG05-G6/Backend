@@ -13,5 +13,7 @@ router.delete("/:id/delete", isAuthenticated, savingGoal.deleteGoal);
 
 router.put("/:id/update", isAuthenticated, savingGoal.updateGoal);
 
+router.put("/:id/status", isAuthenticated, savingGoal.updateStatus);
+
 
 module.exports = router;

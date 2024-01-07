@@ -26,12 +26,16 @@ const savingGoalSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Pending','On-going', 'Completed'],
-    default: 'Pending'
+    enum: ['On-going', 'Completed'],
+    default: 'On-going'
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
+  },
+  total: {
+    type: Number,
+    default: 0
   }
 })
 

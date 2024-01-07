@@ -4,7 +4,7 @@ const Transaction = require('./transaction')
 const normalTransactionSchema = new mongoose.Schema({
   date: {
     type: Date,
-    required: [true, 'Date is required']
+    default: Date.now()
   },
   type: {
     type: String,

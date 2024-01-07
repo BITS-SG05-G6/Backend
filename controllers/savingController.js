@@ -7,12 +7,12 @@ exports.createGoal = async (req, res, next) => {
     // Retrieve fields of the saving from the form data
     const data = {
         name: req?.body?.name,
+        target: req?.body?.target,
         color: req?.body?.color,
         icon: req?.body?.icon,
-        description: req?.body?.description,
-        target: req?.body?.target,
         startDate: req?.body?.startDate,
         endDate: req?.body?.endDate,
+        description: req?.body?.description,
         status: req?.body?.status,
         user: req.userID
     }
@@ -32,11 +32,23 @@ exports.createGoal = async (req, res, next) => {
     }
 }
 
+
 // View all saving goals of the user
 exports.viewGoals = async (req, res, next) => {
     const userId = req.userID
     try {
         const savingGoals = await SavingGoal.find({ user: userId });
+        // // Update the tota current progress of each saving goal
+        await Promise.all(savingGoals.map(async (savingGoal) => {
+            // Find the transactions related to the goal
+            const transactions = await NormalTransaction.find({ saving: savingGoal });
+            // Calculate the current total amount
+            const totalProgress = transactions.reduce((acc, curr) => acc + curr.amount, 0);
+
+            savingGoal.total = totalProgress;
+            await savingGoal.save();
+        }
+        ))
         res.status(200).json(savingGoals);
         if (savingGoals.length == 0) {
             return new ErrorHandler('No saving goal found', 404);
@@ -47,6 +59,7 @@ exports.viewGoals = async (req, res, next) => {
     }
 }
 
+
 // View a saving goal details, including the related transactions
 exports.viewGoal = async (req, res, next) => {
     const goalId = req?.params?.id;
@@ -55,19 +68,7 @@ exports.viewGoal = async (req, res, next) => {
         // Find the transactions related to the goal
         const transactions = await NormalTransaction.find({ saving: goalId });
         // Calculate the current total amount
-        const totalProgress = transactions.reduce((acc, curr) => acc + curr.amount, 0);
-        const completeGoal = {
-            name: savingGoal.name,
-            color: savingGoal.color,
-            icon: savingGoal.icon,
-            description: savingGoal.description,
-            target: savingGoal.target,
-            startDate: savingGoal.startDate,
-            endDate: savingGoal.endDate,
-            status: savingGoal.status,
-            totalProgress: totalProgress
-        }
-        res.status(200).json({ completeGoal, transactions });
+        res.status(200).json({ savingGoal, transactions });
 
 
     } catch (err) {
@@ -77,7 +78,7 @@ exports.viewGoal = async (req, res, next) => {
 
 
 exports.deleteGoal = async (req, res, next) => {
-    const goalId = req.params.Id;
+    const goalId = req.params.id;
     try {
         const transactions = await NormalTransaction.find({ saving: goalId });
         // Remove all related transactions 
@@ -134,3 +135,23 @@ exports.updateGoal = async (req, res, next) => {
         next(new ErrorHandler(err.message, 500));
     }
 };
+
+// Update goal status
+exports.updateStatus = async (req, res, next) => {
+    const goalId = req.params.id;
+    const status = req?.body?.status;
+
+    try {
+        const savingGoal = await SavingGoal.findById(goalId);
+        if (!savingGoal) {
+            return new ErrorHandler('Saving goal not found', 404);
+        }
+        savingGoal.status = status;
+        await savingGoal.save();
+    }
+    catch (err) {
+        next(new ErrorHandler(err.message, 500));
+    }
+
+}
+
