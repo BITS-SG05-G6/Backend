@@ -11,6 +11,7 @@ const categoryRoute = require("./routes/categoryRoute");
 const billRoute = require("./routes/billRoute");
 const walletRoute = require("./routes/walletRoute");
 const statisticRoute = require("./routes/statisticRoute")
+const statisticDetailRoute = require("./routes/statisticDetailRoute")
 
 require("dotenv").config();
 
@@ -30,6 +31,7 @@ mongoose
 app.use("/api", userRoute);
 app.use("/api/transaction", transactionRoute);
 app.use("/api/statistic", statisticRoute);
+app.use("/api/statisticdetail", statisticDetailRoute);
 
 app.use("/api/bill", billRoute);
 app.use("/api/category", categoryRoute)
