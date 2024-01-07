@@ -11,7 +11,6 @@ exports.createWallet = async(req, res, next) => {
     icon: req?.body?.icon,
     description: req?.body?.icon,
     user: req.userID,
-    currency: req?.body?.currency,
   }
 
   try {
@@ -35,7 +34,11 @@ exports.getWallet = async(req, res, next) => {
       const transactions = await NormalTransaction.find({user: req.userID, wallet: wallet})
       let amount = wallet.amount;
       transactions.map((transaction) => {
-        amount += transaction.amount;
+        if (transaction.type === "Expense") {
+          amount -= transaction.amount;
+        } else if (transaction.type === "Income") {
+          amount += transaction.amount;
+        }
       })
       return {
         id: wallet._id,
@@ -43,7 +46,6 @@ exports.getWallet = async(req, res, next) => {
         color: wallet.color,
         icon: wallet.icon,
         amount: amount,
-        currency: wallet.currency,
       }
     }))
     res.status(200).json(walletInfo);
