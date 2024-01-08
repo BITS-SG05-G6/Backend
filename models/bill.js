@@ -18,7 +18,7 @@ const billSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ["Paid", "Not Paid", "Cancel"],
-    default: "Paid"
+    default: "Not Paid"
     // required: [true, "Status is required"],
   },
   frequency: {
