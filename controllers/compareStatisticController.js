@@ -7,28 +7,27 @@ const mongoose = require("mongoose");
 exports.getCompareExpanseIncomeByMonth = async (req, res, next) => {
     try {
         const user = req.userID;
+        const baseCurrency = req.userID.baseCurrency;
         const objectIdUserId = new mongoose.Types.ObjectId(user);
 
         const today = new Date();
-        const startOfLastMonth = new Date(
-            today.getFullYear(),
-            today.getMonth() - 1,
-            1
-        ); // Get the first day of the last month
-        const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0); // Get the last day of the last month
+        const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+
+        const currencyField = baseCurrency === "VND" ? "VND" : "USD";
 
         const totalExpensePerLastMonth = await NormalTransaction.aggregate([
             {
                 $match: {
                     user: objectIdUserId,
-                    date: { $gte: startOfLastMonth, $lte: endOfLastMonth }, // Filter for transactions within the last month
+                    date: { $gte: startOfLastMonth, $lte: endOfLastMonth },
                     type: "Expense",
                 },
             },
             {
                 $group: {
                     _id: null,
-                    totalExpense: { $sum: { $toDouble: "$amount" } },
+                    totalExpense: { $sum: `$${currencyField}` },
                 },
             },
         ]);
@@ -37,26 +36,22 @@ exports.getCompareExpanseIncomeByMonth = async (req, res, next) => {
             {
                 $match: {
                     user: objectIdUserId,
-                    date: { $gte: startOfLastMonth, $lte: endOfLastMonth }, // Filter for transactions within the last month
+                    date: { $gte: startOfLastMonth, $lte: endOfLastMonth },
                     type: "Income",
                 },
             },
             {
                 $group: {
                     _id: null,
-                    totalIncome: { $sum: { $toDouble: "$amount" } },
+                    totalIncome: { $sum: `$${currencyField}` },
                 },
             },
         ]);
 
         const totalExpense =
-            totalExpensePerLastMonth.length > 0
-                ? totalExpensePerLastMonth[0].totalExpense
-                : 0;
+            totalExpensePerLastMonth.length > 0 ? totalExpensePerLastMonth[0].totalExpense : 0;
         const totalIncome =
-            totalIncomePerLastMonth.length > 0
-                ? totalIncomePerLastMonth[0].totalIncome
-                : 0;
+            totalIncomePerLastMonth.length > 0 ? totalIncomePerLastMonth[0].totalIncome : 0;
 
         res.status(200).json({
             Expense: totalExpense,
@@ -67,9 +62,11 @@ exports.getCompareExpanseIncomeByMonth = async (req, res, next) => {
     }
 };
 
+
 exports.getCompareExpanseIncomeByWeek = async (req, res, next) => {
     try {
         const user = req.userID;
+        const baseCurrency = req.userID.baseCurrency;
         const objectIdUserId = new mongoose.Types.ObjectId(user);
 
         const today = new Date();
@@ -83,6 +80,10 @@ exports.getCompareExpanseIncomeByWeek = async (req, res, next) => {
             today.getMonth(),
             today.getDate() - today.getDay() + 6
         ); // End of the current week (Saturday)
+        console.log(startOfWeek)
+        console.log(endOfWeek)
+        const currencyField = baseCurrency === "VND" ? "VND" : "USD";
+
         const totalExpensePerWeek = await NormalTransaction.aggregate([
             {
                 $match: {
@@ -94,7 +95,7 @@ exports.getCompareExpanseIncomeByWeek = async (req, res, next) => {
             {
                 $group: {
                     _id: null,
-                    totalExpense: { $sum: { $toDouble: "$amount" } },
+                    totalExpense: { $sum: `$${currencyField}` }, // Consider the selected base currency
                 },
             },
         ]);
@@ -110,7 +111,7 @@ exports.getCompareExpanseIncomeByWeek = async (req, res, next) => {
             {
                 $group: {
                     _id: null,
-                    totalIncome: { $sum: { $toDouble: "$amount" } },
+                    totalIncome: { $sum: `$${currencyField}` }, // Consider the selected base currency
                 },
             },
         ]);
@@ -129,10 +130,14 @@ exports.getCompareExpanseIncomeByWeek = async (req, res, next) => {
     }
 };
 
+
 exports.getCompareExpanseIncomeTotal = async (req, res, next) => {
     try {
         const user = req.userID;
+        const baseCurrency = req.userID.baseCurrency;
         const objectIdUserId = new mongoose.Types.ObjectId(user);
+
+        const currencyField = baseCurrency === "VND" ? "VND" : "USD";
 
         const totalExpense = await NormalTransaction.aggregate([
             {
@@ -144,7 +149,7 @@ exports.getCompareExpanseIncomeTotal = async (req, res, next) => {
             {
                 $group: {
                     _id: null,
-                    totalExpense: { $sum: { $toDouble: "$amount" } },
+                    totalExpense: { $sum: `$${currencyField}` },
                 },
             },
         ]);
@@ -159,7 +164,7 @@ exports.getCompareExpanseIncomeTotal = async (req, res, next) => {
             {
                 $group: {
                     _id: null,
-                    totalIncome: { $sum: { $toDouble: "$amount" } },
+                    totalIncome: { $sum: `$${currencyField}` },
                 },
             },
         ]);
@@ -177,3 +182,4 @@ exports.getCompareExpanseIncomeTotal = async (req, res, next) => {
         next(new ErrorHandler(err.message, 500));
     }
 };
+

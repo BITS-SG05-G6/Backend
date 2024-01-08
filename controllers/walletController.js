@@ -3,10 +3,21 @@ const ErrorHandler = require("../utils/ErrorHandler");
 const NormalTransaction = require("../models/normalTransaction");
 
 exports.createWallet = async(req, res, next) => {
-  const amount = req?.body?.amount === undefined ? 0 : req?.body?.amount;
+  let VNDAmount;
+  let USDAmount;
+  console.log()
+  if (req.userID.baseCurrency === "VND") {
+    VNDAmount = req?.body?.amount === undefined ? 0 : req?.body?.amount;
+    USDAmount = req?.body?.exchangeAmount === undefined ? 0 : req?.body?.exchangeAmount;
+  } else {
+    USDAmount = req?.body?.amount === undefined ? 0 : req?.body?.amount;
+    VNDAmount = req?.body?.exchangeAmount === undefined ? 0 : req?.body?.exchangeAmount;
+  }
+
   const data = {
     name: req?.body?.name,
-    amount: amount,
+    VND: VNDAmount,
+    USD: USDAmount,
     color: req?.body?.color,
     icon: req?.body?.icon,
     description: req?.body?.icon,
@@ -32,13 +43,16 @@ exports.getWallet = async(req, res, next) => {
     const wallets = await (Wallet.find({user: req.userID}))
     const walletInfo = await Promise.all(wallets.map(async(wallet) => {
       const transactions = await NormalTransaction.find({user: req.userID, wallet: wallet})
-      let amount = wallet.amount;
+      let amount = req.userID.baseCurrency === "VND" ? wallet.VND : wallet.USD;
+
       transactions.map((transaction) => {
-        if (transaction.type === "Expense") {
-          amount -= transaction.amount;
-        } else if (transaction.type === "Income") {
-          amount += transaction.amount;
-        }
+        const transactionAmount = req.userID.baseCurrency === "VND" ? transaction.VND : transaction.USD;
+
+          if (transaction.type === "Expense") {
+            amount -= transactionAmount;
+          } else if (transaction.type === "Income") {
+            amount += transactionAmount;
+          }
       })
       return {
         id: wallet._id,
@@ -63,7 +77,6 @@ exports.deleteWallet = async(req, res, next) => {
         { wallet: null }, 
         { new: true }
       );
-  
       // Handle the updated transaction as needed
       // console.log(`Updated transaction with ID: ${updatedTransaction._id}`);
     } catch (err) {

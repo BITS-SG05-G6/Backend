@@ -5,9 +5,18 @@ const transactionSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Title is required']
   },
-  amount: {
+  currency: {
+    type: String,
+    required: [true, 'Currency is required'],
+    enum: ['VND', 'USD'],
+  },
+  VND: {
     type: Number,
-    required: [true, 'Amount is required']
+    required: [true, 'VND is required']
+  },
+  USD: {
+    type: Number,
+    required: [true, 'USD is required']
   },
   transactionType: {
     type: String,
@@ -34,7 +43,8 @@ const transactionSchema = new mongoose.Schema({
     ref: 'User'
   },
   createdAt: {
-    type: Date
+    type: Date,
+    default: new Date()
   }
 })
 
