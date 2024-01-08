@@ -3,12 +3,16 @@ const mongoose = require("mongoose");
 const walletSchema = new mongoose.Schema({
   name: {
     type: String,
-    require: [true, "Name is require"],
+    require: [true, "Name is required"],
     unique: true,
   },
-  amount: {
+  VND: {
     type: Number,
-    require: [true, "Amount is require"],
+    require: [true, "VND is required"],
+  },
+  USD: {
+    type: Number,
+    require: [true, "USD is required"],
   },
   description: {
     type: String,
