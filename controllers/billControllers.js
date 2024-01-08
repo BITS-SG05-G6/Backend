@@ -38,9 +38,20 @@ const calculateNextDueDate = (startDate, frequency) => {
 // Create a new bill
 const createBill = async (req, res, next) => {
   const nextDueDate = req?.body?.startDate ? calculateNextDueDate(req?.body?.startDate, req.body?.frequency) : null;
+  let VNDAmount;
+  let USDAmount;
+  if (req?.body?.currency === "VND") {
+    VNDAmount = req?.body?.amount;
+    USDAmount = req?.body?.exchangeAmount;
+  } else {
+    USDAmount = req?.body?.amount;
+    VNDAmount = req?.body?.exchangeAmount;
+  }
+
   const data = {
     title: req?.body?.title, 
-    amount: req?.body?.amount,
+    VND: VNDAmount,
+    USD: USDAmount,
     currency: req?.body?.currency,
     reminder: req?.body?.reminder,
     startDate: req?.body?.startDate ? req?.body?.startDate : new Date(),
@@ -77,10 +88,12 @@ const getAllBills = async (req, res) => {
         frequency = bill.frequency;
       }
 
+      const amount = bill.currency === "VND" ? bill.VND : bill.USD;
+
       return {
         _id: bill._id,
         title: bill.title, 
-        amount: bill.amount,
+        amount: amount,
         currency: bill.currency,
         startDate: bill.startDate,
         nextDueDate: nextDueDate,

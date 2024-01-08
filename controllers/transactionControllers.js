@@ -40,7 +40,7 @@ exports.createTransaction = async (req, res, next) => {
     currency: req?.body?.currency,
     VND: VNDAmount,
     USD: USDAmount,
-    saving: req?.body?.saving,
+    saving: saving,
     createdAt: new Date(Date.now())
   };
 
