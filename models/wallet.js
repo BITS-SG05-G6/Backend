@@ -6,13 +6,9 @@ const walletSchema = new mongoose.Schema({
     require: [true, "Name is required"],
     unique: true,
   },
-  VND: {
+  amount: {
     type: Number,
-    require: [true, "VND is required"],
-  },
-  USD: {
-    type: Number,
-    require: [true, "USD is required"],
+    require: [true, "Amount is required"],
   },
   description: {
     type: String,
