@@ -9,7 +9,6 @@ exports.createGoal = async (req, res, next) => {
     name: req?.body?.name,
     target: req?.body?.target,
     color: req?.body?.color,
-    icon: req?.body?.icon,
     startDate: req?.body?.startDate,
     endDate: req?.body?.endDate,
     description: req?.body?.description,
@@ -112,7 +111,6 @@ exports.updateGoal = async (req, res, next) => {
   const dataToUpdate = {
     name: req?.body?.name,
     color: req?.body?.color,
-    icon: req?.body?.icon,
     description: req?.body?.description,
     target: req?.body?.target,
     startDate: req?.body?.startDate,
