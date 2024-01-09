@@ -9,7 +9,7 @@ exports.createCategory = async(req, res, next) => {
     color: req?.body?.color,
     icon: req?.body?.icon,
     description: req?.body?.description,
-    budget: req?.body?.budget,
+    budget: req?.body?.budget === undefined ? 0 : req?.body?.budget,
     user: req.userID
   }
 
@@ -42,7 +42,8 @@ exports.viewCategory = async(req, res, next) => {
       // console.log(transactions);
       transactions.map((transaction) => {
         // console.log(transaction);
-        amount += transaction.amount;
+        const transactionAmount = transaction.currency === "VND" ? transaction.VND : transaction.USD;
+        amount += transactionAmount;
       })
 
       return {

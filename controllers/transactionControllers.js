@@ -3,7 +3,7 @@ const NormalTransaction = require("../models/normalTransaction");
 const ErrorHandler = require("../utils/ErrorHandler");
 const mongoose = require("mongoose");
 const Wallet = require("../models/wallet");
-const Saving = require('../models/savingGoal');
+const Saving = require("../models/savingGoal");
 
 // Create transaction
 exports.createTransaction = async (req, res, next) => {
@@ -24,8 +24,10 @@ exports.createTransaction = async (req, res, next) => {
     USDAmount = req?.body?.amount;
     VNDAmount = req?.body?.exchangeAmount;
   }
-  const saving = 
-    req?.body?.saving === 'none' || req?.body?.saving === undefined
+
+  const addAmount = req.userID.baseCurrency === "VND" ? VNDAmount : USDAmount;
+  const saving =
+    req?.body?.saving === "none" || req?.body?.saving === undefined
       ? null
       : req?.body?.saving;
   const transactionData = {
@@ -41,7 +43,7 @@ exports.createTransaction = async (req, res, next) => {
     VND: VNDAmount,
     USD: USDAmount,
     saving: saving,
-    createdAt: new Date(Date.now())
+    createdAt: new Date(Date.now()),
   };
 
   try {
@@ -50,6 +52,36 @@ exports.createTransaction = async (req, res, next) => {
       const createdTransaction = await NormalTransaction.create(
         transactionData
       );
+
+      if (wallet) {
+        const walletInfo = await Wallet.findById(wallet);
+
+        await Wallet.findByIdAndUpdate(
+          wallet,
+          {
+            amount: transactionData.type === "Expense" ? walletInfo.amount - addAmount : walletInfo.amount + addAmount,
+          },
+          {
+            new: true,
+          }
+        )
+      }
+
+      if (category) {
+        const categoryInfo = await Category.findById(category);
+
+        await Category.findByIdAndUpdate(
+          category,
+          {
+            budget: transactionData.type === "Expense" ? categoryInfo.budget - addAmount : categoryInfo.budget + addAmount,
+          },
+          {
+            new: true,
+          }
+        )
+      }
+
+      
       res.status(200).json({
         message: "Transaction created successfully!",
         transaction: createdTransaction,
@@ -73,9 +105,42 @@ exports.deleteTransaction = async (req, res, next) => {
       return next(new ErrorHandler("Transaction ID are required", 400));
     }
 
+    const transaction = await NormalTransaction.findById(transactionId);
+    const addAmount = req.userID.baseCurrency === "VND" ? transaction.VND : transaction.USD;
+
+    if (transaction.wallet) {
+      const walletInfo = await Wallet.findById(transaction.wallet);
+
+      await Wallet.findByIdAndUpdate(
+        transaction.wallet._id,
+        {
+          amount: transaction.type === "Expense" ? walletInfo.amount + addAmount : walletInfo.amount - addAmount,
+        },
+        {
+          new: true,
+        }
+      )
+    }
+
+    if (transaction.category) {
+      const categoryInfo = await Category.findById(transaction.category);
+
+        await Category.findByIdAndUpdate(
+          transaction.category,
+          {
+            budget: transaction.type === "Expense" ? categoryInfo.budget + addAmount : categoryInfo.budget - addAmount,
+          },
+          {
+            new: true,
+          }
+        )
+    }
+
     await NormalTransaction.findByIdAndDelete(transactionId).catch((err) => {
       next(new ErrorHandler(err.message, 404));
     });
+
+    
     res.status(200).json({ message: "Transaction deleted successfully!" });
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
@@ -88,7 +153,6 @@ exports.viewAllTransactions = async (req, res, next) => {
     date: req?.query?.date,
     user: req.userID,
   };
-
 
   try {
     // console.log(filter.date);
@@ -128,7 +192,8 @@ exports.viewAllTransactions = async (req, res, next) => {
         const categoryName = category ? category.name : null;
         const categoryColor = category ? category.color : null;
 
-        const amount = transaction.currency === "VND" ? transaction.VND : transaction.USD;
+        const amount =
+          transaction.currency === "VND" ? transaction.VND : transaction.USD;
 
         return {
           _id: transaction._id,
@@ -160,7 +225,6 @@ exports.viewTransactionDetail = async (req, res, next) => {
   try {
     if (transactionId === "undefined") {
       return res.status(200).json("");
-
     } else {
       const normalTransaction = await NormalTransaction.findById(
         req.params.transactionId
@@ -186,7 +250,7 @@ exports.viewTransactionDetail = async (req, res, next) => {
         });
         categoryName = category.name;
         categoryColor = category.color;
-      } 
+      }
 
       if (normalTransaction.wallet) {
         const wallet = await Wallet.findById(normalTransaction.wallet).catch(
@@ -195,7 +259,6 @@ exports.viewTransactionDetail = async (req, res, next) => {
           }
         );
 
-
         walletName = wallet.name;
         walletColor = wallet.color;
       } else {
@@ -203,7 +266,10 @@ exports.viewTransactionDetail = async (req, res, next) => {
         walletColor = null;
       }
 
-      const amount = normalTransaction.currency === "VND" ? normalTransaction.VND : normalTransaction.USD;
+      const amount =
+        normalTransaction.currency === "VND"
+          ? normalTransaction.VND
+          : normalTransaction.USD;
 
       if (normalTransaction.saving) {
         const savingGoal = await Saving.findById(
@@ -231,7 +297,7 @@ exports.viewTransactionDetail = async (req, res, next) => {
         walletColor: walletColor,
         saving: savingName,
         savingColor: savingColor,
-        currency: normalTransaction.currency
+        currency: normalTransaction.currency,
       };
       return res.status(200).json(transaction);
     }

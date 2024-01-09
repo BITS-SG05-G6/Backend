@@ -3,21 +3,10 @@ const ErrorHandler = require("../utils/ErrorHandler");
 const NormalTransaction = require("../models/normalTransaction");
 
 exports.createWallet = async(req, res, next) => {
-  let VNDAmount;
-  let USDAmount;
-  console.log()
-  if (req.userID.baseCurrency === "VND") {
-    VNDAmount = req?.body?.amount === undefined ? 0 : req?.body?.amount;
-    USDAmount = req?.body?.exchangeAmount === undefined ? 0 : req?.body?.exchangeAmount;
-  } else {
-    USDAmount = req?.body?.amount === undefined ? 0 : req?.body?.amount;
-    VNDAmount = req?.body?.exchangeAmount === undefined ? 0 : req?.body?.exchangeAmount;
-  }
 
   const data = {
     name: req?.body?.name,
-    VND: VNDAmount,
-    USD: USDAmount,
+    amount: req?.body?.amount === undefined ? 0 : req?.body?.amount,
     color: req?.body?.color,
     icon: req?.body?.icon,
     description: req?.body?.icon,
@@ -41,28 +30,28 @@ exports.createWallet = async(req, res, next) => {
 exports.getWallet = async(req, res, next) => {
   try {
     const wallets = await (Wallet.find({user: req.userID}))
-    const walletInfo = await Promise.all(wallets.map(async(wallet) => {
-      const transactions = await NormalTransaction.find({user: req.userID, wallet: wallet})
-      let amount = req.userID.baseCurrency === "VND" ? wallet.VND : wallet.USD;
+    // const walletInfo = await Promise.all(wallets.map(async(wallet) => {
+    //   const transactions = await NormalTransaction.find({user: req.userID, wallet: wallet})
+    //   let amount = req.userID.baseCurrency === "VND" ? wallet.VND : wallet.USD;
 
-      transactions.map((transaction) => {
-        const transactionAmount = req.userID.baseCurrency === "VND" ? transaction.VND : transaction.USD;
+    //   transactions.map((transaction) => {
+    //     const transactionAmount = req.userID.baseCurrency === "VND" ? transaction.VND : transaction.USD;
 
-          if (transaction.type === "Expense") {
-            amount -= transactionAmount;
-          } else if (transaction.type === "Income") {
-            amount += transactionAmount;
-          }
-      })
-      return {
-        id: wallet._id,
-        name: wallet.name,
-        color: wallet.color,
-        icon: wallet.icon,
-        amount: amount,
-      }
-    }))
-    res.status(200).json(walletInfo);
+    //       if (transaction.type === "Expense") {
+    //         amount -= transactionAmount;
+    //       } else if (transaction.type === "Income") {
+    //         amount += transactionAmount;
+    //       }
+    //   })
+    //   return {
+    //     id: wallet._id,
+    //     name: wallet.name,
+    //     color: wallet.color,
+    //     icon: wallet.icon,
+    //     amount: amount,
+    //   }
+    // }))
+    res.status(200).json(wallets);
   } catch (err) {
     next(new ErrorHandler(err.message, 404))
   }
