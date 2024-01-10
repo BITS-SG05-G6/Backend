@@ -61,7 +61,7 @@ exports.getWallet = async (req, res, next) => {
   const walletId = req.params.id;
   try {
     const wallet = await Wallet.findById(walletId);
-    const transactions = await NormalTransaction.find({ wallet: wallet });
+    const transactions = await NormalTransaction.find({ user: req.userID, wallet: wallet });
     res.status(200).json({ wallet, transactions });
   }
   catch (err) {

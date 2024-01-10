@@ -67,7 +67,7 @@ exports.viewGoal = async (req, res, next) => {
   try {
     const savingGoal = await SavingGoal.findById({ _id: goalId });
     // Find the transactions related to the goal
-    const transactions = await NormalTransaction.find({ saving: goalId });
+    const transactions = await NormalTransaction.find({ user: req.userID, saving: goalId });
     // Calculate the current total amount
     res.status(200).json({ savingGoal, transactions });
   } catch (err) {
