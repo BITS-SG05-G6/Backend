@@ -18,5 +18,6 @@ router.get('/wallet/lastmonth/:walletID',isAuthenticated, statisticWalletDetail.
 router.get('/savinggoal/:savingID',isAuthenticated, statisticSavingGoal.getTotalAndTargetByDate);
 router.get('/savinggoal/thismonth/:savingID',isAuthenticated, statisticSavingGoal.getThisMonthSaving);
 router.get('/savinggoal/lastmonth/:savingID',isAuthenticated, statisticSavingGoal.getLastMonthSaving);
+router.get('/totalsaving',isAuthenticated, statisticSavingGoal.getTotalMonthlySaving);
 
 module.exports = router;        
