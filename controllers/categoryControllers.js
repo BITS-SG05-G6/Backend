@@ -35,30 +35,7 @@ exports.createCategory = async(req, res, next) => {
 exports.viewCategory = async(req, res, next) => {
   try {
     const categories = await (Category.find({user: req.userID}))
-    const a = await Promise.all(categories.map(async(category) => {
-      // console.log(category.name);
-      const transactions = await NormalTransaction.find({user: req.userID, category: category})
-      let amount = 0;
-      // console.log(transactions);
-      transactions.map((transaction) => {
-        // console.log(transaction);
-        const transactionAmount = transaction.currency === "VND" ? transaction.VND : transaction.USD;
-        amount += transactionAmount;
-      })
-
-      return {
-        id: category._id,
-        name: category.name,
-        type: category.type,
-        color: category.color,
-        icon: category.icon,
-        budget: category.budget,
-        amount: amount
-      }
-    }))
-
-
-    res.status(200).json(a);
+    res.status(200).json(categories);
 
 
   } catch (err) {
