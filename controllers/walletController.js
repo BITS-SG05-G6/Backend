@@ -2,7 +2,7 @@ const Wallet = require("../models/wallet");
 const ErrorHandler = require("../utils/ErrorHandler");
 const NormalTransaction = require("../models/normalTransaction");
 
-exports.createWallet = async(req, res, next) => {
+exports.createWallet = async (req, res, next) => {
 
   const data = {
     name: req?.body?.name,
@@ -15,21 +15,21 @@ exports.createWallet = async(req, res, next) => {
 
   try {
     await Wallet.create(data)
-    .then(() => {
-      res.status(200).json("Create wallet successfully")
-    })
-    .catch((err) => {
-      next(new ErrorHandler(err.message, 404))
-    })
+      .then(() => {
+        res.status(200).json("Create wallet successfully")
+      })
+      .catch((err) => {
+        next(new ErrorHandler(err.message, 404))
+      })
 
   } catch (err) {
-    next(new(ErrorHandler(err.message, 404)))
+    next(new (ErrorHandler(err.message, 404)))
   }
 }
 
-exports.getWallet = async(req, res, next) => {
+exports.getWallets = async (req, res, next) => {
   try {
-    const wallets = await (Wallet.find({user: req.userID}))
+    const wallets = await (Wallet.find({ user: req.userID }))
     // const walletInfo = await Promise.all(wallets.map(async(wallet) => {
     //   const transactions = await NormalTransaction.find({user: req.userID, wallet: wallet})
     //   let amount = req.userID.baseCurrency === "VND" ? wallet.VND : wallet.USD;
@@ -57,13 +57,25 @@ exports.getWallet = async(req, res, next) => {
   }
 }
 
-exports.deleteWallet = async(req, res, next) => {
-  const transactionList = await NormalTransaction.find({wallet: req.params.id})
+exports.getWallet = async (req, res, next) => {
+  const walletId = req.params.id;
+  try {
+    const wallet = await Wallet.findById(walletId);
+    const transactions = await NormalTransaction.find({ user: req.userID, wallet: wallet });
+    res.status(200).json({ wallet, transactions });
+  }
+  catch (err) {
+    next(new ErrorHandler(err.message, 500));
+  }
+}
+
+exports.deleteWallet = async (req, res, next) => {
+  const transactionList = await NormalTransaction.find({ wallet: req.params.id })
   await Promise.all(transactionList.map(async (transaction) => {
     try {
       const updatedTransaction = await NormalTransaction.findByIdAndUpdate(
         transaction._id,
-        { wallet: null }, 
+        { wallet: null },
         { new: true }
       );
       // Handle the updated transaction as needed
@@ -74,10 +86,10 @@ exports.deleteWallet = async(req, res, next) => {
     }
   }));
   await Wallet.findByIdAndDelete(req.params.id)
-  .then(() => {
-    res.status(200).json("Delete successfully")
-  })
-  .catch((err) => {
-    next(new ErrorHandler(err.message, 404))
-  })
+    .then(() => {
+      res.status(200).json("Delete successfully")
+    })
+    .catch((err) => {
+      next(new ErrorHandler(err.message, 404))
+    })
 }

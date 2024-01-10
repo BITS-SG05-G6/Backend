@@ -9,7 +9,6 @@ exports.createGoal = async (req, res, next) => {
     name: req?.body?.name,
     target: req?.body?.target,
     color: req?.body?.color,
-    icon: req?.body?.icon,
     startDate: req?.body?.startDate,
     endDate: req?.body?.endDate,
     description: req?.body?.description,
@@ -68,7 +67,7 @@ exports.viewGoal = async (req, res, next) => {
   try {
     const savingGoal = await SavingGoal.findById({ _id: goalId });
     // Find the transactions related to the goal
-    const transactions = await NormalTransaction.find({ saving: goalId });
+    const transactions = await NormalTransaction.find({ user: req.userID, saving: goalId });
     // Calculate the current total amount
     res.status(200).json({ savingGoal, transactions });
   } catch (err) {
@@ -112,7 +111,6 @@ exports.updateGoal = async (req, res, next) => {
   const dataToUpdate = {
     name: req?.body?.name,
     color: req?.body?.color,
-    icon: req?.body?.icon,
     description: req?.body?.description,
     target: req?.body?.target,
     startDate: req?.body?.startDate,
