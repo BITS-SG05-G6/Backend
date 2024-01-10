@@ -18,12 +18,13 @@ exports.createGoal = async (req, res, next) => {
 
   // Create the new saving goal if its name doesn't exist
   try {
+    //   console.log(data);
     const existedGoal = await SavingGoal.findOne({ name: data.name });
     if (existedGoal) {
       return next(new ErrorHandler("Saving goal existed", 404));
     }
     const savingGoal = await SavingGoal.create(data);
-    console.log(savingGoal);
+    // console.log(savingGoal);
     res.status(200).json("Saving goal created successfully");
   } catch (err) {
     next(new ErrorHandler(err.message, 404));
@@ -83,10 +84,9 @@ exports.deleteGoal = async (req, res, next) => {
     await Promise.all(
       transactions.map(async (transaction) => {
         try {
-          const deletedTransactions = await NormalTransaction.findByIdAndDelete(
+          await NormalTransaction.findByIdAndDelete(
             transaction._id
           );
-
           // Handle the updated transaction as needed
         } catch (err) {
           // Handle errors
@@ -96,7 +96,7 @@ exports.deleteGoal = async (req, res, next) => {
     );
 
     // Delete the goal
-    const deletedGoal = await SavingGoal.findByIdAndDelete(goalId);
+    await SavingGoal.findByIdAndDelete(goalId);
     res.status(200).json("Goal successfully deleted");
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
@@ -130,7 +130,7 @@ exports.updateGoal = async (req, res, next) => {
       dataToUpdate,
       { new: true }
     );
-    console.log(updatedGoal);
+    // console.log(updatedGoal);
     res.status(200).json("Saving goal updated successfully");
   } catch (err) {
     next(new ErrorHandler(err.message, 500));

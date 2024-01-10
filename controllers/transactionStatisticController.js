@@ -7,7 +7,7 @@ exports.getTransactionStatistics7days = async (req, res, next) => {
     const user = req.userID;
     const baseCurrency = req.userID.baseCurrency;
     const objectIdUserId = new mongoose.Types.ObjectId(user);
-console.log(baseCurrency);
+// console.log(baseCurrency);
     try {
         const today = new Date();
         const oneWeekAgo = new Date();

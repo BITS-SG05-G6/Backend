@@ -6,7 +6,7 @@ const calculateNextDueDate = (startDate, frequency) => {
   let nextDueDate;
   if (frequency && startDate) {
     const currentDate = new Date(startDate);
-    
+
     switch (frequency) {
       case "Daily":
         nextDueDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
@@ -15,16 +15,20 @@ const calculateNextDueDate = (startDate, frequency) => {
         nextDueDate = new Date(currentDate.setDate(currentDate.getDate() + 7));
         break;
       case "Monthly":
-        nextDueDate = new Date(currentDate.setMonth(currentDate.getMonth() + 1));
+        nextDueDate = new Date(
+          currentDate.setMonth(currentDate.getMonth() + 1)
+        );
         break;
       case "Quarterly":
-        nextDueDate = new Date(currentDate.setMonth(currentDate.getMonth() + 3));
+        nextDueDate = new Date(
+          currentDate.setMonth(currentDate.getMonth() + 3)
+        );
         break;
       case "Anually":
-        nextDueDate = new Date(currentDate.setFullYear(
-          currentDate.getFullYear() + 1
-        ));
-      break;
+        nextDueDate = new Date(
+          currentDate.setFullYear(currentDate.getFullYear() + 1)
+        );
+        break;
       default:
         break;
     }
@@ -37,7 +41,9 @@ const calculateNextDueDate = (startDate, frequency) => {
 
 // Create a new bill
 const createBill = async (req, res, next) => {
-  const nextDueDate = req?.body?.startDate ? calculateNextDueDate(req?.body?.startDate, req.body?.frequency) : null;
+  const nextDueDate = req?.body?.startDate
+    ? calculateNextDueDate(req?.body?.startDate, req.body?.frequency)
+    : null;
   let VNDAmount;
   let USDAmount;
   if (req?.body?.currency === "VND") {
@@ -49,7 +55,7 @@ const createBill = async (req, res, next) => {
   }
 
   const data = {
-    title: req?.body?.title, 
+    title: req?.body?.title,
     VND: VNDAmount,
     USD: USDAmount,
     currency: req?.body?.currency,
@@ -59,18 +65,15 @@ const createBill = async (req, res, next) => {
     description: req?.body?.description,
     nextDueDate: nextDueDate,
     user: req.userID,
-    transactionType: "Bill"
-  }
+    transactionType: "Bill",
+  };
   try {
     // console.log(data);
-    const bill = await Bill.create(data)
-    .catch((err) => {
-      next(new ErrorHandler(err.message, 404))
-    })
-    
-    res
-      .status(200)
-      .json({ message: "Bill created successfully", data: bill });
+    const bill = await Bill.create(data).catch((err) => {
+      next(new ErrorHandler(err.message, 404));
+    });
+
+    res.status(200).json({ message: "Bill created successfully", data: bill });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -79,7 +82,7 @@ const createBill = async (req, res, next) => {
 // Get all bills
 const getAllBills = async (req, res) => {
   try {
-    const bills = await Bill.find({user: req.userID});
+    const bills = await Bill.find({ user: req.userID });
     const billInfo = bills.map((bill) => {
       let nextDueDate = null;
       let frequency = null;
@@ -92,20 +95,18 @@ const getAllBills = async (req, res) => {
 
       return {
         _id: bill._id,
-        title: bill.title, 
+        title: bill.title,
         amount: amount,
         currency: bill.currency,
         startDate: bill.startDate,
         nextDueDate: nextDueDate,
-        reminder: bill.reminder, 
+        reminder: bill.reminder,
         status: bill.status,
         frequency: frequency,
-      }
-    })
-    res
-      .status(200)
-      .json(billInfo);
-      // console.log(bills);
+      };
+    });
+    res.status(200).json(billInfo);
+    // console.log(bills);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -150,10 +151,11 @@ const updateBillById = async (req, res) => {
 const deleteBillById = async (req, res, next) => {
   try {
     // console.log(req.params);
-    const deletedBill = await Bill.findByIdAndDelete(req.params.id)
-    .catch((err) => {
-      next(new ErrorHandler(err.message, 404))
-    })
+    const deletedBill = await Bill.findByIdAndDelete(req.params.id).catch(
+      (err) => {
+        next(new ErrorHandler(err.message, 404));
+      }
+    );
     // if (!deletedBill) {
     //   next(new ErrorHandler("Bill not found", 404));
     //   // return res.status(404).json({ error: "Bill not found" });
@@ -164,10 +166,70 @@ const deleteBillById = async (req, res, next) => {
   }
 };
 
+const payBill = async (req, res, next) => {
+  try {
+    const updatedBill = await Bill.findByIdAndUpdate(
+      req.params.id,
+      {
+        status: "Paid",
+        updateAt: new Date(),
+      },
+      {
+        new: true,
+      }
+    )
+      res.status(200).json( "Bill paid successfully");
+    
+  } catch(err) {
+    next(new ErrorHandler(err.message, 404));
+  }
+  
+};
+
+const checkStatus = async(req, res, next) => {
+  const bills = await Bill.find()
+  .catch((err) => {
+    next(new ErrorHandler(err.message, 404))
+  })
+
+  bills.map(async(bill) => {
+    const today = new Date();
+    if (bill.nextDueDate && today.getTime() >= bill.nextDueDate) {
+      const nextDue = calculateNextDueDate(bill.nextDueDate, bill.frequency);
+
+      const updatedBill = await Bill.findByIdAndUpdate(
+        bill._id,
+        {
+          startDate: bill.nextDueDate,
+          nextDueDate: nextDue,
+        },
+        {
+          new: true,
+        }
+      )
+      const updateTime = updateBill.updateAt.getTime();
+      if (updateTime < updatedBill.startDate) {
+        await Bill.findByIdAndUpdate(
+          bill._id,
+          {
+            status: "Unpaid",
+          },
+          {
+            new: true,
+          }
+        )
+      }
+
+    }
+  })
+}
+
 module.exports = {
   createBill,
   getAllBills,
   getBillById,
   updateBillById,
   deleteBillById,
+  payBill,
+  checkStatus
 };

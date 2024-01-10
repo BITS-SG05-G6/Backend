@@ -6,7 +6,7 @@ const NormalTransaction = require("../models/normalTransaction");
 exports.getCategoryStatistics7days = async (req, res, next) => {
   const user = req.userID;
   const { categoryId } = req.params;
-  console.log("category id",categoryId)
+  // console.log("category id",categoryId)
   const objectIdUserId = new mongoose.Types.ObjectId(user);
   const objectIdCategoryId = new mongoose.Types.ObjectId(categoryId);
 

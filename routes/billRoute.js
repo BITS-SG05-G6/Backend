@@ -18,4 +18,6 @@ router.put("/:id", billControllers.updateBillById);
 // Delete a bill by ID
 router.delete("/:id", isAuthenticated, billControllers.deleteBillById);
 
+router.put("/pay/:id", billControllers.payBill);
+
 module.exports = router;

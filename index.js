@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const errorHandler = require("./middlewares/errors");
+var cron = require('node-cron');
 
 const transactionRoute = require("./routes/transactionRoute");
 const userRoute = require("./routes/userRoute");
@@ -13,6 +14,7 @@ const walletRoute = require("./routes/walletRoute");
 const statisticRoute = require("./routes/statisticRoute")
 const statisticDetailRoute = require("./routes/statisticDetailRoute")
 const savingRoute = require('./routes/savingRoute');
+const { checkStatus } = require("./controllers/billControllers");
 
 require("dotenv").config();
 
@@ -40,6 +42,8 @@ app.use("/api/category", categoryRoute)
 app.use("/api/wallet", walletRoute);
 app.use("/api/saving", savingRoute);
 app.use(errorHandler);
+
+cron.schedule('* * * * * *', checkStatus);
 
 // ROUTES MIDDLEWARE
 const port = process.env.PORT || 8000;
