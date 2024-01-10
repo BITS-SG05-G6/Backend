@@ -146,3 +146,55 @@ exports.getLastMonthSaving = async (req, res, next) => {
   }
 };
 
+
+exports.getTotalMonthlySaving = async (req, res, next) => {
+  try {
+    const baseCurrency = req.userID.baseCurrency;
+    const user = req.userID;
+    const objectIdUserId = new mongoose.Types.ObjectId(user);
+    const currencyField = baseCurrency === "VND" ? "VND" : "USD";
+
+    const date = new Date(); // Current date
+    const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+    const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+    const totalMonthlySaving = await NormalTransaction.aggregate([
+      {
+        $match: {
+          user: objectIdUserId,
+          type: "Saving",
+          date: { $gte: startOfMonth, $lte: endOfMonth },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalVND: {
+            $sum: { $cond: [{ $eq: ["$currency", "VND"] }, "$VND", 0] },
+          },
+          totalUSD: {
+            $sum: { $cond: [{ $eq: ["$currency", "USD"] }, "$USD", 0] },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalMonthlySaving: {
+            $cond: [{ $eq: [baseCurrency, "VND"] }, "$totalVND", "$totalUSD"],
+          },
+        },
+      },
+    ]);
+
+    const total = totalMonthlySaving.length > 0 ? totalMonthlySaving[0].totalMonthlySaving : 0;
+
+    res.status(200).json({
+      totalMonthlySaving: total,
+    });
+  } catch (err) {
+    next(new ErrorHandler(err.message, 500));
+  }
+};
+
+
