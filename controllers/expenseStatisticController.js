@@ -287,8 +287,11 @@ exports.expensesFrequencyDistributionLastMonth = async (req, res, next) => {
 
 exports.getTotalExpenseByCategory = async (req, res, next) => {
     try {
-        const userID = req.user;
+        const user = req.userID;
+        const baseCurrency = req.userID.baseCurrency;
         const objectIdUserId = new mongoose.Types.ObjectId(user);
+
+        const currencyField = baseCurrency === "VND" ? "VND" : "USD";
 
         const expensesByCategory = await NormalTransaction.aggregate([
             {
@@ -311,7 +314,7 @@ exports.getTotalExpenseByCategory = async (req, res, next) => {
             {
                 $group: {
                     _id: "$categoryData.name",
-                    totalExpense: { $sum: { $toDouble: "$amount" } },
+                    totalExpense: { $sum: `$${currencyField}` },
                     numberOfExpense: { $sum: 1 },
                 },
             },
@@ -333,10 +336,12 @@ exports.getTotalExpenseByCategory = async (req, res, next) => {
     }
 };
 
+
 exports.getTotalExpenseByCategoryLastWeek = async (req, res, next) => {
     try {
-        const userID = req.user;
+        const user = req.userID;
         const objectIdUserId = new mongoose.Types.ObjectId(user);
+        const baseCurrency = req.userID.baseCurrency;
 
         const today = new Date();
         const startOfWeek = new Date(
@@ -349,6 +354,8 @@ exports.getTotalExpenseByCategoryLastWeek = async (req, res, next) => {
             today.getMonth(),
             today.getDate() - today.getDay() + 6
         );
+
+        const currencyField = baseCurrency === "VND" ? "VND" : "USD";
 
         const expensesByCategory = await NormalTransaction.aggregate([
             {
@@ -372,7 +379,7 @@ exports.getTotalExpenseByCategoryLastWeek = async (req, res, next) => {
             {
                 $group: {
                     _id: "$categoryData.name",
-                    totalExpense: { $sum: { $toDouble: "$amount" } },
+                    totalExpense: { $sum: `$${currencyField}` },
                     numberOfExpense: { $sum: 1 },
                 },
             },
@@ -393,14 +400,18 @@ exports.getTotalExpenseByCategoryLastWeek = async (req, res, next) => {
         next(new ErrorHandler(err.message, 500));
     }
 };
+
 exports.getTotalExpenseByCategoryLastMonth = async (req, res, next) => {
     try {
-        const userID = req.user;
+        const user = req.userID;
         const objectIdUserId = new mongoose.Types.ObjectId(user);
+        const baseCurrency = req.userID.baseCurrency;
 
         const today = new Date();
         const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1); // Get the first day of the previous month
         const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0); // Get the last day of the previous month
+
+        const currencyField = baseCurrency === "VND" ? "VND" : "USD";
 
         const expensesByCategory = await NormalTransaction.aggregate([
             {
@@ -424,7 +435,7 @@ exports.getTotalExpenseByCategoryLastMonth = async (req, res, next) => {
             {
                 $group: {
                     _id: "$categoryData.name",
-                    totalExpense: { $sum: { $toDouble: "$amount" } },
+                    totalExpense: { $sum: `$${currencyField}` },
                     numberOfExpense: { $sum: 1 },
                 },
             },
@@ -445,4 +456,5 @@ exports.getTotalExpenseByCategoryLastMonth = async (req, res, next) => {
         next(new ErrorHandler(err.message, 500));
     }
 };
+
 

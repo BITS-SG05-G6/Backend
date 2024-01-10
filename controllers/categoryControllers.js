@@ -32,12 +32,34 @@ exports.createCategory = async(req, res, next) => {
   }
 }
 
-exports.viewCategory = async(req, res, next) => {
+exports.viewCategories = async(req, res, next) => {
   try {
     const categories = await (Category.find({user: req.userID}))
     res.status(200).json(categories);
 
+exports.viewCategory = async(req, res, next) => {
+  const id = req.params.id;
+  try {
+    const categoryFound = await Category.findById(id);
+    const transactions = await NormalTransaction.find({user: req.userID, category: categoryFound})
+    let amount = 0;
+      transactions.map((transaction) => {
+        // console.log(transaction);
+        const transactionAmount = transaction.currency === "VND" ? transaction.VND : transaction.USD;
+        amount += transactionAmount;
+      })
 
+    const category = {
+        id: categoryFound._id,
+        name: categoryFound.name,
+        type: categoryFound.type,
+        color: categoryFound.color,
+        icon: categoryFound.icon,
+        budget: categoryFound.budget,
+        amount: amount
+    }
+  
+    res.status(200).json({category, transactions});
   } catch (err) {
     next(new ErrorHandler(err.message, 404))
   }

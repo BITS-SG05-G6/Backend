@@ -11,9 +11,6 @@ const savingGoalSchema = new mongoose.Schema({
   color: {
     type: String,
   },
-  icon: {
-    type: String
-  },
   target: {
     type: Number,
   },

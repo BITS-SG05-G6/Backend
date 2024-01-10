@@ -10,7 +10,8 @@ const userRoute = require("./routes/userRoute");
 const categoryRoute = require("./routes/categoryRoute");
 const billRoute = require("./routes/billRoute");
 const walletRoute = require("./routes/walletRoute");
-const statisticRoute = require("./routes/statisticRoute");
+const statisticRoute = require("./routes/statisticRoute")
+const statisticDetailRoute = require("./routes/statisticDetailRoute")
 const savingRoute = require('./routes/savingRoute');
 
 require("dotenv").config();
@@ -32,6 +33,7 @@ app.use("/api", userRoute);
 app.use("/api/transaction", transactionRoute);
 app.use("/api/category", categoryRoute);
 app.use("/api/statistic", statisticRoute);
+app.use("/api/statisticdetail", statisticDetailRoute);
 
 app.use("/api/bill", billRoute);
 app.use("/api/category", categoryRoute)

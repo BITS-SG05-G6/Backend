@@ -23,10 +23,10 @@ const transactionSchema = new mongoose.Schema({
     enum: ['Normal', 'Bill'],
     required: [true]
   },
-  currency: {
-    type: String,
-    required: [true, 'Currency is required']
-  },
+  // currency: {
+  //   type: String,
+  //   required: [true, 'Currency is required']
+  // },
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category'
