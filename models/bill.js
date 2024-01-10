@@ -17,14 +17,16 @@ const billSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["Paid", "Not Paid", "Cancel"],
-    default: "Not Paid"
-    // required: [true, "Status is required"],
+    enum: ["Paid", "Unpaid"],
+    default: "Unpaid"
   },
   frequency: {
     type: String,
     enum: ["Daily", "Weekly", "Monthly", "Quarterly", "Anually", "None"],
   },
+  updateAt: {
+    type: Date,
+  }
 });
 
 billSchema.add(Transaction.transactionSchema)

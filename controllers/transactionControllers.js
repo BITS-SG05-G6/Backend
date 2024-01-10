@@ -80,11 +80,12 @@ exports.createTransaction = async (req, res, next) => {
           }
         )
       }
-      
+
       res.status(200).json({
         message: "Transaction created successfully!",
         transaction: createdTransaction,
       });
+      // console.log(transactionData);
     } else {
       return next(
         new ErrorHandler("Invalid type of transaction (Normal or Bill)!", 400)
@@ -139,7 +140,6 @@ exports.deleteTransaction = async (req, res, next) => {
       next(new ErrorHandler(err.message, 404));
     });
 
-    
     res.status(200).json({ message: "Transaction deleted successfully!" });
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
