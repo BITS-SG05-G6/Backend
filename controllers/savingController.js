@@ -68,7 +68,10 @@ exports.viewGoal = async (req, res, next) => {
   try {
     const savingGoal = await SavingGoal.findById({ _id: goalId });
     // Find the transactions related to the goal
-    const transactions = await NormalTransaction.find({ user: req.userID, saving: goalId });
+    const transactions = await NormalTransaction.find({
+      user: req.userID,
+      saving: goalId,
+    });
     // Calculate the current total amount
     res.status(200).json({ savingGoal, transactions });
   } catch (err) {
@@ -84,9 +87,7 @@ exports.deleteGoal = async (req, res, next) => {
     await Promise.all(
       transactions.map(async (transaction) => {
         try {
-          await NormalTransaction.findByIdAndDelete(
-            transaction._id
-          );
+          await NormalTransaction.findByIdAndDelete(transaction._id);
           // Handle the updated transaction as needed
         } catch (err) {
           // Handle errors
@@ -130,7 +131,6 @@ exports.updateGoal = async (req, res, next) => {
       dataToUpdate,
       { new: true }
     );
-    // console.log(updatedGoal);
     res.status(200).json("Saving goal updated successfully");
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
