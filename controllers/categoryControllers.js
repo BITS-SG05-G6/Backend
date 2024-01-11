@@ -104,3 +104,32 @@ exports.deleteCategory = async (req, res, next) => {
       next(new ErrorHandler(err.message, 404));
     });
 };
+
+// Update Category
+exports.updateCategory = async (req, res, next) => {
+  const categoryId = req.params.id;
+  const { name, type, color, icon, description, budget } = req.body;
+
+  try {
+    const categoryToUpdate = await Category.findById(categoryId);
+
+    if (!categoryToUpdate) {
+      return next(new ErrorHandler("Category not found", 404));
+    }
+
+    // Update the category properties
+    categoryToUpdate.name = name || categoryToUpdate.name;
+    categoryToUpdate.type = type || categoryToUpdate.type;
+    categoryToUpdate.color = color || categoryToUpdate.color;
+    categoryToUpdate.icon = icon || categoryToUpdate.icon;
+    categoryToUpdate.description = description || categoryToUpdate.description;
+    categoryToUpdate.budget =
+      budget === undefined ? categoryToUpdate.budget : budget;
+
+    await categoryToUpdate.save();
+
+    res.status(200).json("Category updated successfully");
+  } catch (err) {
+    next(new ErrorHandler(err.message, 404));
+  }
+};

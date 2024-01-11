@@ -12,4 +12,6 @@ router.get("/view/:id", isAuthenticated, wallet.getWallet);
 
 router.delete("/delete/:id", isAuthenticated, wallet.deleteWallet);
 
+router.put("/update/:id", isAuthenticated, wallet.updateWallet);
+
 module.exports = router;
