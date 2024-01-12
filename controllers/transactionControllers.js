@@ -59,12 +59,15 @@ exports.createTransaction = async (req, res, next) => {
         await Wallet.findByIdAndUpdate(
           wallet,
           {
-            amount: transactionData.type === "Expense" ? walletInfo.amount - addAmount : walletInfo.amount + addAmount,
+            amount:
+              transactionData.type === "Expense"
+                ? walletInfo.amount - addAmount
+                : walletInfo.amount + addAmount,
           },
           {
             new: true,
           }
-        )
+        );
       }
 
       if (category) {
@@ -73,12 +76,15 @@ exports.createTransaction = async (req, res, next) => {
         await Category.findByIdAndUpdate(
           category,
           {
-            budget: transactionData.type === "Expense" ? categoryInfo.budget - addAmount : categoryInfo.budget + addAmount,
+            budget:
+              transactionData.type === "Expense"
+                ? categoryInfo.budget - addAmount
+                : categoryInfo.budget + addAmount,
           },
           {
             new: true,
           }
-        )
+        );
       }
 
       res.status(200).json({
@@ -106,7 +112,8 @@ exports.deleteTransaction = async (req, res, next) => {
     }
 
     const transaction = await NormalTransaction.findById(transactionId);
-    const addAmount = req.userID.baseCurrency === "VND" ? transaction.VND : transaction.USD;
+    const addAmount =
+      req.userID.baseCurrency === "VND" ? transaction.VND : transaction.USD;
 
     if (transaction.wallet) {
       const walletInfo = await Wallet.findById(transaction.wallet);
@@ -114,26 +121,32 @@ exports.deleteTransaction = async (req, res, next) => {
       await Wallet.findByIdAndUpdate(
         transaction.wallet._id,
         {
-          amount: transaction.type === "Expense" ? walletInfo.amount + addAmount : walletInfo.amount - addAmount,
+          amount:
+            transaction.type === "Expense"
+              ? walletInfo.amount + addAmount
+              : walletInfo.amount - addAmount,
         },
         {
           new: true,
         }
-      )
+      );
     }
 
     if (transaction.category) {
       const categoryInfo = await Category.findById(transaction.category);
 
-        await Category.findByIdAndUpdate(
-          transaction.category,
-          {
-            budget: transaction.type === "Expense" ? categoryInfo.budget + addAmount : categoryInfo.budget - addAmount,
-          },
-          {
-            new: true,
-          }
-        )
+      await Category.findByIdAndUpdate(
+        transaction.category,
+        {
+          budget:
+            transaction.type === "Expense"
+              ? categoryInfo.budget + addAmount
+              : categoryInfo.budget - addAmount,
+        },
+        {
+          new: true,
+        }
+      );
     }
 
     await NormalTransaction.findByIdAndDelete(transactionId).catch((err) => {
@@ -188,9 +201,12 @@ exports.viewAllTransactions = async (req, res, next) => {
     const transactionList = await Promise.all(
       normalTransactions.map(async (transaction) => {
         const category = await Category.findById(transaction.category);
+        const wallet = await Wallet.findById(transaction.wallet);
         const categoryName = category ? category.name : null;
+        const categoryID = category ? category._id : null;
         const categoryColor = category ? category.color : null;
-
+        const walletName = wallet ? wallet.name : null;
+        const walletID = wallet ? wallet._id : null;
         const amount =
           transaction.currency === "VND" ? transaction.VND : transaction.USD;
 
@@ -205,7 +221,10 @@ exports.viewAllTransactions = async (req, res, next) => {
           createdAt: transaction.createdAt,
           date: transaction.date,
           wallet: transaction.wallet,
-          description: transaction.description
+          description: transaction.description,
+          categoryID: categoryID,
+          walletName: walletName,
+          walletID: walletID,
         };
       })
     );
@@ -309,19 +328,47 @@ exports.viewTransactionDetail = async (req, res, next) => {
 
 // Update transaction
 exports.updateTransaction = async (req, res, next) => {
-  const { userId, transactionId } = req.params;
-  const { amount, type, description, title } = req?.body;
+  const { transactionId } = req.params;
+  const category =
+    req?.body?.category === "none" || req?.body?.category === undefined
+      ? null
+      : req?.body?.category;
+  const wallet =
+    req?.body?.wallet === "none" || req?.body?.wallet === undefined
+      ? null
+      : req?.body?.wallet;
+  let VNDAmount;
+  let USDAmount;
+  if (req?.body?.currency === "VND") {
+    VNDAmount = req?.body?.amount;
+    USDAmount = req?.body?.exchangeAmount;
+  } else {
+    USDAmount = req?.body?.amount;
+    VNDAmount = req?.body?.exchangeAmount;
+  }
+  const data = {
+    title: req?.body?.title,
+    date: req?.body?.date,
+    category: category,
+    type: req?.body?.type,
+    wallet: wallet,
+    currency: req?.body?.currency,
+    VND: VNDAmount,
+    USD: USDAmount,
+    description: req?.body?.description,
+  };
 
   try {
-    if (!transactionId || !userId) {
+    if (!transactionId) {
       return next(
         new ErrorHandler("Transaction ID and User ID are required", 400)
       );
     }
 
-    const normalTransaction = await NormalTransaction.findOne({
-      _id: transactionId,
-      user: userId,
+    const normalTransaction = await NormalTransaction.findById(
+      transactionId
+    ).catch((err) => {
+      next(new ErrorHandler(err.message, 404));
     });
 
     if (!normalTransaction) {
@@ -329,21 +376,251 @@ exports.updateTransaction = async (req, res, next) => {
         new ErrorHandler("Transaction not found for this User ID", 404)
       );
     }
+    const oldCategory = await Category.findById(normalTransaction.category);
+    const newCategory = await Category.findById(data.category);
+    const oldWallet = await Wallet.findById(normalTransaction.wallet);
+    const newWallet = await Wallet.findById(data.wallet);
 
-    // Update the transaction fields
-    normalTransaction.amount = amount || normalTransaction.amount;
-    normalTransaction.description =
-      description || normalTransaction.description;
-    normalTransaction.type = type || normalTransaction.type;
-    normalTransaction.title = title || normalTransaction.title;
+    if (data.category) {
+      if (normalTransaction.VND != data.VND) {
+        const transactionAmount =
+          normalTransaction.type === "Expense"
+            ? req.userID.baseCurrency === "VND"
+              ? normalTransaction.VND
+              : normalTransaction.USD
+            : -(req.userID.baseCurrency === "VND"
+                ? normalTransaction.VND
+                : normalTransaction.USD);
 
-    // Save the updated transact`xx``on
+        const newTransactionAmount =
+          data.type === "Expense"
+            ? -(req.userID.baseCurrency === "VND" ? data.VND : data.USD)
+            : req.userID.baseCurrency === "VND"
+            ? data.VND
+            : data.USD;
 
-    await normalTransaction.save();
+        if (normalTransaction.category != data.category) {
+          oldCategory.budget += transactionAmount;
+
+          newCategory.budget += newTransactionAmount;
+        } else {
+          oldCategory.budget += transactionAmount;
+          oldCategory.budget += newTransactionAmount;
+        }
+      } else {
+        const amount =
+          normalTransaction.type === "Expense"
+            ? req.userID.baseCurrency === "VND"
+              ? normalTransaction.VND
+              : normalTransaction.USD
+            : -(req.userID.baseCurrency === "VND"
+                ? normalTransaction.VND
+                : normalTransaction.USD);
+
+        if (normalTransaction.category != data.category) {
+          oldCategory.budget += amount;
+          newCategory.budget -= amount;
+        } else {
+          oldCategory.budget += amount;
+          oldCategory.budget -= amount;
+        }
+      }
+    } else if (!data.category && normalTransaction.category) {
+      const amount =
+        normalTransaction.type === "Expense"
+          ? req.userID.baseCurrency === "VND"
+            ? normalTransaction.VND
+            : normalTransaction.USD
+          : -(req.userID.baseCurrency === "VND"
+              ? normalTransaction.VND
+              : normalTransaction.USD);
+
+      oldCategory.budget += amount;
+    }
+
+    console.log(JSON.stringify(oldCategory));
+    if (oldCategory && newCategory) {
+      if (JSON.stringify(oldCategory) === JSON.stringify(newCategory)) {
+        await Category.findByIdAndUpdate(
+          oldCategory._id,
+          {
+            budget: oldCategory.budget,
+          },
+          {
+            new: true,
+          }
+        );
+        console.log("old: " + oldCategory.budget);
+  
+      } else {
+        console.log("old: " + oldCategory.budget);
+        console.log("new: " + newCategory.budget);
+  
+        await Category.findByIdAndUpdate(
+          oldCategory._id,
+          {
+            budget: oldCategory.budget,
+          },
+          {
+            new: true,
+          }
+        );
+  
+        await Category.findByIdAndUpdate(
+          newCategory._id,
+          {
+            budget: newCategory.budget,
+          },
+          {
+            new: true,
+          }
+        );
+      }
+    } else if (oldCategory && newCategory === null) {
+      await Category.findByIdAndUpdate(
+        oldCategory._id,
+        {
+          budget: oldCategory.budget,
+        },
+        {
+          new: true,
+        }
+      );
+    } else if (newCategory && oldCategory === null) {
+      await Category.findByIdAndUpdate(
+        newCategory._id,
+        {
+          budget: newCategory.budget,
+        },
+        {
+          new: true,
+        }
+      );
+    }
+
+    if (data.wallet) {
+      if (normalTransaction.VND != data.VND) {
+        const transactionAmount =
+          normalTransaction.type === "Expense"
+            ? req.userID.baseCurrency === "VND"
+              ? normalTransaction.VND
+              : normalTransaction.USD
+            : -(req.userID.baseCurrency === "VND"
+                ? normalTransaction.VND
+                : normalTransaction.USD);
+
+        const newTransactionAmount =
+          data.type === "Expense"
+            ? -(req.userID.baseCurrency === "VND" ? data.VND : data.USD)
+            : req.userID.baseCurrency === "VND"
+            ? data.VND
+            : data.USD;
+
+        if (normalTransaction.wallet != data.wallet) {
+          oldWallet.amount += transactionAmount;
+
+          newWallet.amount += newTransactionAmount;
+        } else {
+          oldWallet.amount += transactionAmount;
+          oldWallet.amount += newTransactionAmount;
+        }
+      } else {
+        const amount =
+          normalTransaction.type === "Expense"
+            ? req.userID.baseCurrency === "VND"
+              ? normalTransaction.VND
+              : normalTransaction.USD
+            : -(req.userID.baseCurrency === "VND"
+                ? normalTransaction.VND
+                : normalTransaction.USD);
+
+        if (normalTransaction.wallet != data.wallet) {
+          oldWallet.amount += amount;
+          newWallet.amount -= amount;
+        } else {
+          oldWallet.amount += amount;
+          oldWallet.amount -= amount;
+        }
+      }
+    } else if (!data.wallet && normalTransaction.wallet) {
+      const amount =
+        normalTransaction.type === "Expense"
+          ? req.userID.baseCurrency === "VND"
+            ? normalTransaction.VND
+            : normalTransaction.USD
+          : -(req.userID.baseCurrency === "VND"
+              ? normalTransaction.VND
+              : normalTransaction.USD);
+
+      oldWallet.amount += amount;
+    }
+
+    if (oldWallet && newWallet) {
+      if (JSON.stringify(oldWallet) === JSON.stringify(newWallet)) {
+        await Wallet.findByIdAndUpdate(
+          oldWallet._id,
+          {
+            amount: oldWallet.amount,
+          },
+          {
+            new: true,
+          }
+        );
+      } else {
+        await Wallet.findByIdAndUpdate(
+          oldWallet._id,
+          {
+            amount: oldWallet.amount,
+          },
+          {
+            new: true,
+          }
+        );
+  
+        await Wallet.findByIdAndUpdate(
+          newWallet._id,
+          {
+            amount: newWallet.amount,
+          },
+          {
+            new: true,
+          }
+        );
+      }
+    } else if (oldWallet && newWallet === null) {
+      await Wallet.findByIdAndUpdate(
+        oldWallet._id,
+        {
+          amount: oldWallet.amount,
+        },
+        {
+          new: true,
+        }
+      );
+    } else if (newWallet && oldWallet === null) {
+      await Wallet.findByIdAndUpdate(
+        newWallet._id,
+        {
+          amount: newWallet.amount,
+        },
+        {
+          new: true,
+        }
+      );
+    }
+
+    const updatedTransaction = await NormalTransaction.findByIdAndUpdate(
+      transactionId, data,
+      {
+        new: true,
+      }
+    ).catch((err) => {
+      next(new ErrorHandler(err.message, 404));
+    });
 
     res.status(200).json({
       message: "Transaction updated successfully!",
-      normalTransaction,
+      updatedTransaction,
     });
   } catch (err) {
     next(new ErrorHandler(err.message, 500));

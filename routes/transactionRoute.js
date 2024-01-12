@@ -11,7 +11,6 @@ router.get('/viewall', isAuthenticated, transaction.viewAllTransactions);
 
 router.get('/:transactionId', isAuthenticated, transaction.viewTransactionDetail); 
 
-router.put('/update/:userId/:transactionId', transaction.updateTransaction);
-
+router.put('/update/:transactionId', isAuthenticated, transaction.updateTransaction);
 
 module.exports = router;
