@@ -204,6 +204,8 @@ exports.viewAllTransactions = async (req, res, next) => {
           currency: transaction.currency,
           createdAt: transaction.createdAt,
           date: transaction.date,
+          wallet: transaction.wallet,
+          description: transaction.description
         };
       })
     );
