@@ -183,3 +183,60 @@ exports.getCompareExpanseIncomeTotal = async (req, res, next) => {
     }
 };
 
+exports.getCompareExpanseIncomeThisMonth = async (req, res, next) => {
+    try {
+        const user = req.userID;
+        const baseCurrency = req.userID.baseCurrency;
+        const objectIdUserId = new mongoose.Types.ObjectId(user);
+
+        const today = new Date();
+        const startOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endOfCurrentMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+        const currencyField = baseCurrency === "VND" ? "VND" : "USD";
+
+        const totalExpensePerCurrentMonth = await NormalTransaction.aggregate([
+            {
+                $match: {
+                    user: objectIdUserId,
+                    date: { $gte: startOfCurrentMonth, $lte: endOfCurrentMonth },
+                    type: "Expense",
+                },
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalExpense: { $sum: `$${currencyField}` },
+                },
+            },
+        ]);
+
+        const totalIncomePerCurrentMonth = await NormalTransaction.aggregate([
+            {
+                $match: {
+                    user: objectIdUserId,
+                    date: { $gte: startOfCurrentMonth, $lte: endOfCurrentMonth },
+                    type: "Income",
+                },
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalIncome: { $sum: `$${currencyField}` },
+                },
+            },
+        ]);
+
+        const totalExpense =
+            totalExpensePerCurrentMonth.length > 0 ? totalExpensePerCurrentMonth[0].totalExpense : 0;
+        const totalIncome =
+            totalIncomePerCurrentMonth.length > 0 ? totalIncomePerCurrentMonth[0].totalIncome : 0;
+
+        res.status(200).json({
+            Expense: totalExpense,
+            Income: totalIncome,
+        });
+    } catch (err) {
+        next(new ErrorHandler(err.message, 500));
+    }
+};

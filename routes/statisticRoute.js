@@ -39,6 +39,9 @@ router.get('/catex/lastmonth', isAuthenticated, expenseStatistic.getTotalExpense
 //Chart 5: Income/Expense Ratio
 router.get('/exin/month', isAuthenticated, compareStatistic.getCompareExpanseIncomeByMonth);
 
+router.get('/exin/thismonth', isAuthenticated, compareStatistic.getCompareExpanseIncomeThisMonth);
+
+
 router.get('/exin/week', isAuthenticated, compareStatistic.getCompareExpanseIncomeByWeek);
 
 router.get('/exin/total', isAuthenticated, compareStatistic.getCompareExpanseIncomeTotal);
