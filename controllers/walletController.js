@@ -1,3 +1,4 @@
+const Category = require('../models/category');
 const Wallet = require("../models/wallet");
 const ErrorHandler = require("../utils/ErrorHandler");
 const NormalTransaction = require("../models/normalTransaction");
@@ -63,7 +64,33 @@ exports.getWallet = async (req, res, next) => {
       user: req.userID,
       wallet: wallet,
     });
-    res.status(200).json({ wallet, transactions });
+    const transactionList = await Promise.all(
+      transactions.map(async (transaction) => {
+        const category = await Category.findById(transaction.category);
+        const categoryName = category ? category.name : null;
+        const categoryID = category ? category._id : null;
+        const categoryColor = category ? category.color : null;
+        const amount =
+          transaction.currency === "VND" ? transaction.VND : transaction.USD;
+
+        return {
+          _id: transaction._id,
+          title: transaction.title,
+          category: categoryName,
+          amount: amount,
+          color: categoryColor,
+          type: transaction.type,
+          currency: transaction.currency,
+          createdAt: transaction.createdAt,
+          date: transaction.date,
+          wallet: wallet._id,
+          description: transaction.description,
+          categoryID: categoryID,
+          walletName: wallet.name,
+        };
+      })
+    );
+    res.status(200).json({ wallet: wallet, transactions: transactionList });
   } catch (err) {
     next(new ErrorHandler(err.message, 500));
   }

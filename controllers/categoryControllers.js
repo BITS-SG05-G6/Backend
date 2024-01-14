@@ -1,6 +1,7 @@
 const Category = require("../models/category");
 const ErrorHandler = require("../utils/ErrorHandler");
 const NormalTransaction = require("../models/normalTransaction");
+const Wallet = require("../models/wallet");
 
 exports.createCategory = async (req, res, next) => {
   const data = {
@@ -53,12 +54,39 @@ exports.viewCategory = async (req, res, next) => {
       category: categoryFound,
     });
     let amount = 0;
-    transactions.map((transaction) => {
-      // console.log(transaction);
-      const transactionAmount =
-        transaction.currency === "VND" ? transaction.VND : transaction.USD;
-      amount += transactionAmount;
-    });
+    // transactions.map((transaction) => {
+    //   // console.log(transaction);
+    //   const transactionAmount =
+    //     transaction.currency === "VND" ? transaction.VND : transaction.USD;
+    //   amount += transactionAmount;
+    // });
+
+    const transactionList = await Promise.all(
+      transactions.map(async (transaction) => {
+        const wallet = await Wallet.findById(transaction.wallet);
+        const walletName = wallet ? wallet.name : null;
+        const walletID = wallet ? wallet._id : null;
+        const amount =
+          transaction.currency === "VND" ? transaction.VND : transaction.USD;
+
+        return {
+          _id: transaction._id,
+          title: transaction.title,
+          category: categoryFound.name,
+          amount: amount,
+          color: categoryFound.color,
+          type: transaction.type,
+          currency: transaction.currency,
+          createdAt: transaction.createdAt,
+          date: transaction.date,
+          wallet: transaction.wallet,
+          description: transaction.description,
+          categoryID: categoryFound._id,
+          walletName: walletName,
+          walletID: walletID,
+        };
+      })
+    );
 
     const category = {
       id: categoryFound._id,
@@ -70,7 +98,7 @@ exports.viewCategory = async (req, res, next) => {
       amount: amount,
     };
 
-    res.status(200).json({ category, transactions });
+    res.status(200).json({ category: category, transactions: transactionList });
   } catch (err) {
     next(new ErrorHandler(err.message, 404));
   }

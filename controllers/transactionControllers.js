@@ -105,7 +105,6 @@ exports.createTransaction = async (req, res, next) => {
 // Delete transaction
 exports.deleteTransaction = async (req, res, next) => {
   const { transactionId } = req.params;
-
   try {
     if (!transactionId) {
       return next(new ErrorHandler("Transaction ID are required", 400));
