@@ -82,7 +82,7 @@ exports.getTransactionStatisticsThisMonth = async (req, res, next) => {
     try {
         const today = new Date();
         const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        console.log(firstDayOfMonth);
+        // console.log(firstDayOfMonth);
         const currencyField = baseCurrency === "VND" ? "VND" : "USD";
 
         const totalPerDay = await NormalTransaction.aggregate([
@@ -150,8 +150,8 @@ exports.getTransactionStatisticsLastMonth = async (req, res, next) => {
         const today = new Date();
         const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
         const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-        console.log(startOfLastMonth)
-        console.log(endOfLastMonth)
+        // console.log(startOfLastMonth)
+        // console.log(endOfLastMonth)
         const currencyField = baseCurrency === "VND" ? "VND" : "USD";
 
         const totalPerWeek = await NormalTransaction.aggregate([
