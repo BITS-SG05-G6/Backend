@@ -82,7 +82,7 @@ exports.getTransactionStatisticsThisMonth = async (req, res, next) => {
     try {
         const today = new Date();
         const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        
+        console.log(firstDayOfMonth);
         const currencyField = baseCurrency === "VND" ? "VND" : "USD";
 
         const totalPerDay = await NormalTransaction.aggregate([
