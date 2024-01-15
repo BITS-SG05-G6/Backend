@@ -18,7 +18,7 @@ exports.getTotalAndTargetByDate = async (req, res, next) => {
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
-          total: { $sum: "$VND" }, // Summing the VND attribute
+          total: { $sum: `$${user.baseCurrency}` }, // Use baseCurrency to dynamically select the field
         },
       },
     ]);
@@ -48,7 +48,7 @@ exports.getTotalAndTargetByDate = async (req, res, next) => {
 exports.getThisMonthSaving = async (req, res, next) => {
   const user = req.userID;
   const { savingID } = req.params;
-
+  const baseCurrency = user.baseCurrency;
   try {
     const currentDate = new Date();
     const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
@@ -68,7 +68,7 @@ exports.getThisMonthSaving = async (req, res, next) => {
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
-          total: { $sum: "$VND" },
+          total: { $sum: `$${baseCurrency}` }, // Use baseCurrency to dynamically select the field
         },
       },
     ]);
@@ -96,6 +96,7 @@ exports.getThisMonthSaving = async (req, res, next) => {
 };
 
 
+
 exports.getLastMonthSaving = async (req, res, next) => {
   const user = req.userID;
   const { savingID } = req.params;
@@ -119,7 +120,7 @@ exports.getLastMonthSaving = async (req, res, next) => {
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
-          total: { $sum: "$VND" },
+          total: { $sum: `$${user.baseCurrency}` }, 
         },
       },
     ]);
