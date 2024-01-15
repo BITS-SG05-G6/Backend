@@ -25,7 +25,7 @@ exports.createTransaction = async (req, res, next) => {
     VNDAmount = req?.body?.exchangeAmount;
   }
 
-  const addAmount = req.userID.baseCurrency === "VND" ? VNDAmount : USDAmount;
+  const addAmount = req.userID.baseCurrency === "VND" ? parseInt(VNDAmount) : parseInt(USDAmount);
   const saving =
     req?.body?.saving === "none" || req?.body?.saving === undefined
       ? null
@@ -339,11 +339,11 @@ exports.updateTransaction = async (req, res, next) => {
   let VNDAmount;
   let USDAmount;
   if (req?.body?.currency === "VND") {
-    VNDAmount = req?.body?.amount;
-    USDAmount = req?.body?.exchangeAmount;
+    VNDAmount = parseInt(req?.body?.amount);
+    USDAmount = parseInt(req?.body?.exchangeAmount);
   } else {
-    USDAmount = req?.body?.amount;
-    VNDAmount = req?.body?.exchangeAmount;
+    USDAmount = parseInt(req?.body?.amount);
+    VNDAmount = parseInt(req?.body?.exchangeAmount);
   }
   const data = {
     title: req?.body?.title,

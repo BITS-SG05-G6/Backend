@@ -91,7 +91,7 @@ exports.updateProfile = async (req, res, next) => {
           exchangeValue = parseFloat((wallet.amount / data.rate).toFixed(2));
         } else {
           // console.log(wallet.amount * data.rate);
-          exchangeValue = wallet.amount * data.rate;
+          exchangeValue = Math.floor(wallet.amount * data.rate);
         }
 
         await Wallet.findByIdAndUpdate(wallet._id, {
@@ -140,7 +140,10 @@ exports.updateProfile = async (req, res, next) => {
 
         await SavingGoal.findByIdAndUpdate(goal._id, {
           target: exchangeGoalValue
-        }, { new: true })
+        }, { new: true})
+
+        console.log("old: " + goal.target);
+        console.log("new: " + exchangeGoalValue);
       })
     }
     const updatedUser = await User.findByIdAndUpdate(
