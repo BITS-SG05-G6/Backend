@@ -1,5 +1,4 @@
 const express = require("express");
-const app = express();
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -17,7 +16,7 @@ const savingRoute = require('./routes/savingRoute');
 const { checkStatus } = require("./controllers/billControllers");
 
 require("dotenv").config();
-
+const app = express();
 // MIDDLEWARE
 app.use(cors());
 app.use(express.json());
