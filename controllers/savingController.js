@@ -1,6 +1,8 @@
 const SavingGoal = require("../models/savingGoal");
 const ErrorHandler = require("../utils/ErrorHandler");
 const NormalTransaction = require("../models/normalTransaction");
+const Category = require("../models/category");
+const Wallet = require("../models/wallet");
 
 // Create a saving goal
 exports.createGoal = async (req, res, next) => {
@@ -53,6 +55,7 @@ exports.viewGoals = async (req, res, next) => {
         await savingGoal.save();
       })
     );
+    // console.log(savingGoals);
     res.status(200).json(savingGoals);
     if (savingGoals.length == 0) {
       return new ErrorHandler("No saving goal found", 404);
@@ -72,8 +75,43 @@ exports.viewGoal = async (req, res, next) => {
       user: req.userID,
       saving: goalId,
     });
+
+    const transactionList = await Promise.all(
+      transactions.map(async (transaction) => {
+        const category = await Category.findById(transaction.category);
+        const wallet = await Wallet.findById(transaction.wallet);
+        const categoryName = category ? category.name : null;
+        const categoryID = category ? category._id : null;
+        const categoryColor = category ? category.color : null;
+        const walletName = wallet ? wallet.name : null;
+        const walletID = wallet ? wallet._id : null;
+        const amount =
+          transaction.currency === "VND" ? transaction.VND : transaction.USD;
+
+        return {
+          _id: transaction._id,
+          title: transaction.title,
+          category: categoryName,
+          amount: amount,
+          color: categoryColor,
+          type: transaction.type,
+          currency: transaction.currency,
+          createdAt: transaction.createdAt,
+          date: transaction.date,
+          wallet: transaction.wallet,
+          description: transaction.description,
+          categoryID: categoryID,
+          walletName: walletName,
+          walletID: walletID,
+        };
+      })
+    );
+    // Sort transactions based on created date (descending order)
+    transactionList.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
     // Calculate the current total amount
-    res.status(200).json({ savingGoal, transactions });
+    res.status(200).json({ savingGoal: savingGoal, transactions: transactionList });
   } catch (err) {
     next(new ErrorHandler(err.message, 404));
   }
