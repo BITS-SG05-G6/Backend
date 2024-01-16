@@ -80,8 +80,7 @@ exports.getCompareExpanseIncomeByWeek = async (req, res, next) => {
             today.getMonth(),
             today.getDate() - today.getDay() + 6
         ); // End of the current week (Saturday)
-        console.log(startOfWeek)
-        console.log(endOfWeek)
+
         const currencyField = baseCurrency === "VND" ? "VND" : "USD";
 
         const totalExpensePerWeek = await NormalTransaction.aggregate([

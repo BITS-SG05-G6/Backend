@@ -153,7 +153,7 @@ exports.getTotalMonthlySaving = async (req, res, next) => {
     const baseCurrency = req.userID.baseCurrency;
     const user = req.userID;
     const objectIdUserId = new mongoose.Types.ObjectId(user);
-    const currencyField = baseCurrency === "VND" ? "VND" : "USD";
+    // const currencyField = baseCurrency === "VND" ? "VND" : "USD";
 
     const date = new Date(); // Current date
     const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
@@ -171,10 +171,10 @@ exports.getTotalMonthlySaving = async (req, res, next) => {
         $group: {
           _id: null,
           totalVND: {
-            $sum: { $cond: [{ $eq: ["$currency", "VND"] }, "$VND", 0] },
+            $sum: { $cond: [{ $eq: [baseCurrency, "VND"] }, "$VND", 0] },
           },
           totalUSD: {
-            $sum: { $cond: [{ $eq: ["$currency", "USD"] }, "$USD", 0] },
+            $sum: { $cond: [{ $eq: [baseCurrency, "USD"] }, "$USD", 0] },
           },
         },
       },
